@@ -12,8 +12,7 @@
 	var robotID = "ttsListener";
 
 	// SpeechSynthesis params
-	var lang = 'en-US';		// es-ES, en-US
-	var my_voice = "Google US English";	// Google US English, Google UK English Female, Google UK English Male, Google español
+	var my_voice = "Google español";	// Google US English, Google UK English Female, Google UK English Male, Google español
 
 	
 // Create a new utterance for the specified text
