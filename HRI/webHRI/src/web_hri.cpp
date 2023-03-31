@@ -16,11 +16,12 @@
 class CwebInterface: public rclcpp::Node
 {
     public:
-        CwebInterface(): Node("ChromeHRI")
-        {
-            //Read parameters and set default values
-            this->declare_parameter<std::string>("script_id", "");
-            this->get_parameter("script_id", script_id);
+        CwebInterface(): Node("ChromeHRI"){}
+
+        ~CwebInterface(){
+            // close chrome?
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[webHRI] Closing Chrome");
+            system("wmctrl -c 'MAPIR HRI'");
         }
 
         void launchScript()
@@ -33,14 +34,10 @@ class CwebInterface: public rclcpp::Node
             std::string package_share_directory = ament_index_cpp::get_package_share_directory("webHRI");
 
             std::ostringstream s;
-            //s << "/opt/google/chrome/google-chrome --profile-directory=Default --app-id=" << script_id << " &";
-            s << "/opt/google/chrome/google-chrome " << package_share_directory.c_str() << "/web/web_hri.html &";
-
-            printf(s.str().c_str());
-
+            s << "/opt/google/chrome/google-chrome --new-window " << package_share_directory.c_str() << "/web/web_hri.html &";
             system( s.str().c_str() );
 
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[chromeHRI] Opening Chrome Extension with command: %s", s.str().c_str() );
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[webHRI] Opening Chrome Extension with command: %s", s.str().c_str() );
         }
 
     private:
