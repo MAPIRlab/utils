@@ -1,0 +1,12 @@
+#-------------------------------------------------
+# (mqtt_bridge)
+#-------------------------------------------------
+mqtt_bridge:
+  ros__parameters:
+    host: "150.214.109.137"
+    port: 8002
+    username: ""
+    password: ""
+    MQTT_topicName: "UMAbot"
+    MQTT_topics_subscribe: "NavigationCommand,ClientACK,ServerACK"
+    append_timestamp: false
