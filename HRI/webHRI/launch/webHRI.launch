@@ -1,10 +1,8 @@
 <!-- 
-  Launch file for the MAPIR chrome based HRI
-  This node launches the Google Chrome Extension automatically
-  See the extension parameters to configure the MQTT topic
+  Launch file for the MAPIR web-based Human Robot Interface
+  This node launches the Chrome web-page automatically with the interface
+  See the extension parameters to configure the MQTT broker and topic
 -->
 <launch>
-  <node pkg="webHRI" exec="webHRI" name="webHRI" output="screen" launch-prefix="">
-    <param name="script_ir" value="bphinpfjfpfccnmcdgbnlajdmdalfheb" />
-  </node>
+  <node pkg="webHRI" exec="webHRI" name="webHRI" output="screen" launch-prefix="" />
 </launch>

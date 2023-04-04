@@ -5,7 +5,7 @@
 	// MQTT params
 	var wsbroker = "150.214.109.137";
 	var wsport = 8000;
-	var prefix = 'rhodon';
+	var prefix = 'simbot';
 	var topic = prefix + '/TTS';
 	var topicSTT = prefix + '/STT';
 	var robotID = "ttsListener";
