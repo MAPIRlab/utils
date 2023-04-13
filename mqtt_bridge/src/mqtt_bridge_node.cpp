@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <diagnostic_msgs/msg/key_value.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <diagnostic_msgs/msg/key_value.hpp>
 #include <boost/bind.hpp>
 
 #include "mqtt_bridge/CMQTTmosquitto2.hpp"
