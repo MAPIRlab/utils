@@ -39,8 +39,8 @@ PatrolTimesServer::PatrolTimesServer() : Node("patrol_times_action_server")
 
     wp.header.frame_id = "map";
     wp.header.stamp = this->now();
-    wp.pose.position.x = 1.0;
-    wp.pose.position.y = 0.0;
+    wp.pose.position.x = 0.0;
+    wp.pose.position.y = 4.0;
     wp.pose.position.z = 0.0;
     wp.pose.orientation.x = 0.0;
     wp.pose.orientation.y = 0.0;
@@ -70,10 +70,6 @@ rclcpp_action::CancelResponse PatrolTimesServer::handle_cancel(
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
     (void)goal_handle;
-    
-    // Stop everything, and cancell all other clients we may have active
-    
-
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -145,11 +141,11 @@ void PatrolTimesServer::execute(const std::shared_ptr<GoalHandlePatrolTimes> goa
                     result->msg = "Unable to complete patrol. Canceled by request";
                     goal_handle->canceled(result);
                     RCLCPP_INFO(this->get_logger(), "Patrol canceled");
+
+                    // request cancel to navToPose
+                    this->nav_client_->async_cancel_all_goals();
                     return;
                 }
-                
-                // attend callbacks
-                //rclcpp::spin_some(this);
 
                 // Publish Patrol feedback
                 times_completed = i-1;
