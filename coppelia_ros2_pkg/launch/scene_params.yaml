@@ -1,0 +1,8 @@
+sim_ros2_interface:
+  ros__parameters:
+    num_beacons: 10
+    javiparam: 10
+
+coppelia_simulator:
+  ros__parameters:
+    javiparam: 20
