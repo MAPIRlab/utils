@@ -1,0 +1,12 @@
+#-------------------------------------------------
+# (mqtt_bridge)
+#-------------------------------------------------
+mqtt_bridge:
+  ros__parameters:
+    host: "150.214.109.137"       # MQTT broker ip
+    port: 8002                    # MQTT broker TCP port
+    username: ""
+    password: ""
+    MQTT_topicName: "simbot"      # main topic
+    MQTT_topics_subscribe: "STT"  # subtopics to listen
+    append_timestamp: false
