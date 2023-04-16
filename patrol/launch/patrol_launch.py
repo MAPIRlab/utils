@@ -9,10 +9,8 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     # Get the launch directory
-    my_dir = get_package_share_directory('mqtt_bridge')
-
-    # common variables
-    params_yaml_file = os.path.join(my_dir, 'launch', 'mqtt_basic_robot.yaml')
+    my_dir = get_package_share_directory('patrol')
+    params_yaml_file = os.path.join(my_dir, 'launch', 'patrol_params.yaml')
         
     logger = LaunchConfiguration("log_level")
     
@@ -26,12 +24,12 @@ def generate_launch_description():
             description="Logging level",
             ),
 
-        # MQTT_BRIDGE
+        # PATROL
         Node(
-            package='mqtt_bridge',
-            executable='mqtt_bridge_node',
-            name='mqtt_bridge',
+            package='patrol',
+            executable='patrol_times',
+            name='patrol_times',
             output='screen',
-            parameters=[params_yaml_file]            
+            parameters=[params_yaml_file]
             )
     ])
