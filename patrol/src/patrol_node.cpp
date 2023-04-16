@@ -1,4 +1,5 @@
 #include <patrol/patrol_node.hpp>
+#include <sstream>
 
 using namespace std::placeholders;
 
@@ -23,32 +24,80 @@ PatrolTimesServer::PatrolTimesServer() : Node("patrol_times_action_server")
       "navigate_to_pose"
     );
 
+    // Init poses of the patrol from parameters
+    RCLCPP_INFO(this->get_logger(), "Loading Poses of the Patrol...");
+    int i = 1;
+    std::vector<double> default_pose = {NAN, NAN, NAN, NAN, NAN, NAN, NAN};
 
-    // Read pose_list_ from parameters
-    auto wp = geometry_msgs::msg::PoseStamped();
-    wp.header.frame_id = "map";
-    wp.header.stamp = this->now();
-    wp.pose.position.x = 0.0;
-    wp.pose.position.y = 0.0;
-    wp.pose.position.z = 0.0;
-    wp.pose.orientation.x = 0.0;
-    wp.pose.orientation.y = 0.0;
-    wp.pose.orientation.z = 0.0;
-    wp.pose.orientation.w = 1.0;
-    pose_list_.push_back(wp);
+    try
+    {
+      std::stringstream ss;
+      int i = 1;
+      while(true)
+      {
+        // pose_i
+        ss.str(std::string()); // Clear the string stream
+        ss << "pose_" << i;
+        
+        // declare and read parameter (or default nan)
+        std::vector<double> p = this->declare_parameter<std::vector<double>>(ss.str(), default_pose);
+        
+        // check if pose_i has been set
+        if (std::isnan(p[0])){
+          // pose_i not found in paramters..
+          break;
+        }
+        else{
+          // show pose
+          std::cout << ss.str() << " = [";
+          for (double j: p)
+            std::cout << j << ' ';
+          std::cout << "]" << std::endl;
 
-    wp.header.frame_id = "map";
-    wp.header.stamp = this->now();
-    wp.pose.position.x = 0.0;
-    wp.pose.position.y = 4.0;
-    wp.pose.position.z = 0.0;
-    wp.pose.orientation.x = 0.0;
-    wp.pose.orientation.y = 0.0;
-    wp.pose.orientation.z = 0.0;
-    wp.pose.orientation.w = 1.0;
+          // set as pose
+          auto wp = geometry_msgs::msg::PoseStamped();
+          wp.header.frame_id = "map";
+          wp.header.stamp = this->now();
 
-    pose_list_.push_back(wp);
+          if (p.size() == 7){
+            // full pose provided
+            wp.pose.position.x = p[0];
+            wp.pose.position.y = p[1];
+            wp.pose.position.z = p[2];;
+            wp.pose.orientation.x = p[3];
+            wp.pose.orientation.y = p[4];
+            wp.pose.orientation.z = p[5];
+            wp.pose.orientation.w = p[6];
+          }else if (p.size() == 3)
+          {
+            // simple Position provided
+            wp.pose.position.x = p[0];
+            wp.pose.position.y = p[1];
+            wp.pose.position.z = p[2];;
+            wp.pose.orientation.x = 0;
+            wp.pose.orientation.y = 0;
+            wp.pose.orientation.z = 0;
+            wp.pose.orientation.w = 1;
+          }
+          else
+          {
+            RCLCPP_INFO(this->get_logger(), "%s is not a pose(7) neither a position(3). Ignoring.", ss.str());
+          }
+          
+          // add pose to list          
+          pose_list_.push_back(wp);
 
+          // another pose?
+          i++;
+        }
+      }
+
+      RCLCPP_INFO(this->get_logger(), "PatrolTimes server ready for operation. %u poses loaded. Waiting requests...",i-1);
+    }
+    catch(const std::exception& e)
+    {
+      std::cerr << e.what() << '\n';
+    }
 }
 
 PatrolTimesServer::~PatrolTimesServer(){}
