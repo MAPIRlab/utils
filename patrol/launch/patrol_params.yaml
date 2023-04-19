@@ -5,4 +5,4 @@ patrol_times:
   ros__parameters:
     # Add as many poses in the patrol as desired (starts in pose_1)
     pose_1: [0.0,0.0,0.0,0.0,0.0,0.0,1.0]
-    pose_2: [0.0,4.0,0.0,0.0,0.0,0.0,1.0]
+    pose_2: [0.0,5.0,0.0,0.0,0.0,0.0,1.0]
