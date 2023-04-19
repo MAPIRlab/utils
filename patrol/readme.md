@@ -1,0 +1,2 @@
+# Patrol
+This pkg implements an action server to perform patrols. The list of poses the robot must navigate on each patrol iteration is configured by parameter. On goal_request, a "times" parameter is sent to indicate the number to times the patrol sequence must be executted.

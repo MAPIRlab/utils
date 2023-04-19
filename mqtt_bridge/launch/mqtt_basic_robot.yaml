@@ -7,6 +7,6 @@ mqtt_bridge:
     port: 8002                    # MQTT broker TCP port
     username: ""
     password: ""
-    MQTT_topicName: "simbot"      # main topic
-    MQTT_topics_subscribe: "STT"  # subtopics to listen
+    MQTT_topicName: "simbot"        # main topic
+    MQTT_topics_subscribe: "tasks"  # subtopics to listen
     append_timestamp: false
