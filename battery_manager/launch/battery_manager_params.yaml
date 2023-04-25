@@ -1,0 +1,18 @@
+#-------------------------------------------------
+# (battery_manager)
+#-------------------------------------------------
+battery_manager:
+  ros__parameters:
+    # main params
+    verbose: True
+    input_battery_topic: "/battery"
+    output_battery_topic: "/battery_filtered"                    # MQTT broker TCP port
+    filter_lenght_samples: 30
+    publish_rate: 1
+    low_battery_voltage: 24.2
+    critial_battery_voltage: 24.0
+
+    # Log params
+    create_log: False
+    log_directory_path: "~"
+    log_interval_sec: 20
