@@ -76,9 +76,16 @@ class Battery(Node):
         self.list_battery_obs = []
         self.list_battery_obs_to_log = []
 
+        # Create a timer Callback
         timer_period = 1/publish_rate  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
+        # show config:
+        if self.verbose:
+            self.get_logger().info("Battery_Manager running with: ")
+            self.get_logger().info("low_battery_voltage: %.2f V" % (self.low_bat_th))
+            self.get_logger().info("critial_battery_voltage: %.2f V" % (self.critical_bat_th))
+              
     #---------
     # LOOP
     #--------- 
@@ -152,7 +159,7 @@ class Battery(Node):
             if self.docking_request == False:
                 # infor users
                 self.last_crit_bat_time = rclpy.Time.now()
-                self.get_logger().info("BATTERY IS CRITICAL (%.2f) --> COMMANDING HIGH PRIORITY DOCKING!! ", self.batF.voltage)
+                self.get_logger().info("BATTERY IS CRITICAL (%.2f) --> COMMANDING HIGH PRIORITY DOCKING!! " %(self.batF.voltage))
                 resp = self.add_task(task_name="say", task_type="say", task_priority=True, task_repetitions=1, task_impact="None", task_args=["Carefull!. Battery level is Critial. Cleaning Task Manager and Requesting Docking"])
 
                 # Command Dock
@@ -167,7 +174,7 @@ class Battery(Node):
         # Low battery (timeOut = 60s)
         elif float(self.batF.voltage)<float(self.low_bat_th):
             # just inform the user
-            self.get_logger().info("BATTERY IS GETTING LOW (%.2f < %.2f)!! ",self.batF.voltage, self.low_bat_th)
+            self.get_logger().info("BATTERY IS GETTING LOW (%.2f < %.2f)!! " %(self.batF.voltage, self.low_bat_th))
             self.add_task(task_name="say", task_type="say", task_priority=True, task_repetitions=1, task_impact="None", task_args=["Your attention please!. Battery level is low. Consider recharging soon..."])
 
 
