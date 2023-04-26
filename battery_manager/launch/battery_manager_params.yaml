@@ -6,9 +6,9 @@ battery_manager:
     # main params
     verbose: True
     input_battery_topic: "/battery"
-    output_battery_topic: "/battery_filtered"                    # MQTT broker TCP port
+    output_battery_topic: "/battery_filtered"
     filter_lenght_samples: 30
-    publish_rate: 1
+    publish_rate: 2.0
     low_battery_voltage: 24.2
     critial_battery_voltage: 24.0
 

@@ -12,7 +12,7 @@ def generate_launch_description():
     my_dir = get_package_share_directory('battery_manager')
 
     # params
-    params_yaml_file = os.path.join(my_dir, 'launch', 'battery_manager_params.yaml')
+    params_yaml_file = os.path.join(my_dir, 'battery_manager_params.yaml')
         
     logger = LaunchConfiguration("log_level")
     
@@ -32,6 +32,7 @@ def generate_launch_description():
             executable='battery_manager',
             name='battery_manager',
             output='screen',
+            prefix="xterm -e",
             parameters=[params_yaml_file]            
             )
     ])
