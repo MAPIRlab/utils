@@ -4,7 +4,7 @@
 battery_manager:
   ros__parameters:
     # main params
-    verbose: True
+    verbose: False
     input_battery_topic: "/battery"
     output_battery_topic: "/battery_filtered"
     filter_lenght_samples: 30

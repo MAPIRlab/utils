@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rclpy
 from rclpy.node import Node
+from threading import Thread
 
 from sensor_msgs.msg import BatteryState
 import diagnostic_msgs.msg
@@ -17,7 +18,7 @@ class Battery(Node):
     batF = BatteryState()       # The battery filtered (moving average)
     list_battery_obs = []       # list of most current battery observations (for filtering)
     list_battery_obs_to_log = []
-    docking_request = False
+    dock_request_sent = False
     dock_task_id = -2           # set initially to unused value
 
 
@@ -36,7 +37,7 @@ class Battery(Node):
         in_battery = self.get_parameter('input_battery_topic').get_parameter_value().string_value
         out_battery = self.get_parameter('output_battery_topic').get_parameter_value().string_value
         self.filter_lenght = self.get_parameter('filter_lenght_samples').get_parameter_value().integer_value
-        publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
+        self.publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
         self.low_bat_th = self.get_parameter('low_battery_voltage').get_parameter_value().double_value
         self.critical_bat_th = self.get_parameter('critial_battery_voltage').get_parameter_value().double_value
         self.verbose = self.get_parameter('verbose').get_parameter_value().bool_value
@@ -89,15 +90,13 @@ class Battery(Node):
             self.get_logger().info("low_battery_voltage: %.2f V" % (self.low_bat_th))
             self.get_logger().info("critial_battery_voltage: %.2f V" % (self.critical_bat_th))
         
-        # Create a timer Callback
-        if publish_rate == 0.0:
-            publish_rate = 1
-        timer_period = 1/publish_rate  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)      
+        # Create a timer Callback (not good! problems with service deadlocks)
+        #if publish_rate == 0.0:
+        #    publish_rate = 1
+        #timer_period = 1/publish_rate  # seconds
+        #self.timer = self.create_timer(timer_period, self.timer_callback)      
+     
 
-    #---------
-    # LOOP
-    #--------- 
     def timer_callback(self):
         # Publish filtered battery
         if rclpy.ok(): 
@@ -165,7 +164,7 @@ class Battery(Node):
     def check_battery_levels(self):
         # Critial battery (timeOut = 300s)
         if float(self.batF.voltage) < float(self.critical_bat_th):
-            if (self.get_clock().now() - self.last_crit_bat_time > self.timeout) and (self.docking_request == False):
+            if (self.get_clock().now() - self.last_crit_bat_time > self.timeout) and (self.dock_request_sent == False):
                 self.last_crit_bat_time = self.get_clock().now()
                 # inform users
                 self.get_logger().info("BATTERY IS CRITICAL (%.2f) --> COMMANDING HIGH PRIORITY DOCKING!! " %(self.batF.voltage))
@@ -184,17 +183,18 @@ class Battery(Node):
                 self.srv_req.task_repetitions = 1
                 self.srv_req.task_impact = "reset"
                 self.srv_req.task_args = []
-                resp = self.srv_cli.call_async(self.srv_req)
-                rclpy.spin_until_future_complete(self, resp)
                 
-                if resp.result().success:
+                # we call synchronously because spin is in a differet thread
+                resp = self.srv_cli.call(self.srv_req)
+                self.get_logger().info("SRV call done!")
+                
+                if resp.success == True:
                     # Docking was accepted
-                    self.docking_request = True
+                    self.dock_request_sent = True
                     self.dock_task_id = resp.task_id
                 else:
-                    self.get_logger().info("ERROR --> Unable to request DOCK action to TaskManager")
+                    self.get_logger().info("ERROR --> Unable to request DOCK action to TaskManager: %s" % resp.error_msg)
                 
-
         # Low battery (timeOut = 60s)
         elif (float(self.batF.voltage) < float(self.low_bat_th)) and (self.get_clock().now() - self.last_low_bat_time > self.timeout):
             self.last_low_bat_time = self.get_clock().now()             
@@ -228,7 +228,7 @@ class Battery(Node):
                 if "task_id" in d.keys():
                     if d["task_id"] == str(self.dock_task_id):
                         # This is the result of our Dock request!
-                        self.docking_request = False    # Allow new Docking requests in the future
+                        self.dock_request_sent = False    # Allow new Docking requests in the future
 
                         # If we commanded a Dock Action and it failed, then we should announce it!
                         if d["task_status"] == "FAILURE":
@@ -253,7 +253,22 @@ class Battery(Node):
 def main():
     rclpy.init()
     node = Battery()
-    rclpy.spin(node)
+
+    # call rclpy.spin in a separate Thread to avoid deadlocks
+    spin_thread = Thread(target=rclpy.spin, args=(node, ), daemon=True)
+    spin_thread.start()
+
+    # Check battery lvls according to specified rate
+    rate = node.create_rate(node.publish_rate)
+    try:
+        while rclpy.ok():
+            node.timer_callback()
+            rate.sleep()
+    except KeyboardInterrupt:
+        pass
+    rclpy.shutdown()
+    spin_thread.join()
+        
 
 if __name__ == '__main__':
     main()
