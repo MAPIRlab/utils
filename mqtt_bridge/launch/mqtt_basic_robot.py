@@ -32,6 +32,7 @@ def generate_launch_description():
             executable='mqtt_bridge_node',
             name='mqtt_bridge',
             output='screen',
+            prefix='xterm -e',
             parameters=[params_yaml_file]            
             )
     ])
