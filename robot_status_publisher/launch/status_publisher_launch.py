@@ -9,10 +9,8 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     # Get the launch directory
-    my_dir = get_package_share_directory('mqtt_bridge')
-
-    # common variables
-    params_yaml_file = os.path.join(my_dir, 'launch', 'mqtt_basic_robot.yaml')
+    my_dir = get_package_share_directory('robot_status_publisher')
+    params_yaml_file = os.path.join(my_dir, 'launch', 'status_publisher_params.yaml')
         
     logger = LaunchConfiguration("log_level")
     
@@ -26,13 +24,12 @@ def generate_launch_description():
             description="Logging level",
             ),
 
-        # MQTT_BRIDGE
+        # STATUS-PUBLISHER
         Node(
-            package='mqtt_bridge',
-            executable='mqtt_bridge_node',
-            name='mqtt_bridge',
+            package='robot_status_publisher',
+            executable='robot_status_publisher_node',
+            name='status_publisher',
             output='screen',
-            prefix='xterm -e',
-            parameters=[params_yaml_file]            
+            parameters=[params_yaml_file]
             )
     ])

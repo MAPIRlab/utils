@@ -9,10 +9,10 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     # Get the launch directory
-    my_dir = get_package_share_directory('mqtt_bridge')
+    my_dir = get_package_share_directory('battery_manager')
 
-    # common variables
-    params_yaml_file = os.path.join(my_dir, 'launch', 'mqtt_basic_robot.yaml')
+    # params
+    params_yaml_file = os.path.join(my_dir, 'battery_manager_params.yaml')
         
     logger = LaunchConfiguration("log_level")
     
@@ -26,13 +26,13 @@ def generate_launch_description():
             description="Logging level",
             ),
 
-        # MQTT_BRIDGE
+        # BATTERY_MANAGER
         Node(
-            package='mqtt_bridge',
-            executable='mqtt_bridge_node',
-            name='mqtt_bridge',
+            package='battery_manager',
+            executable='battery_manager',
+            name='battery_manager',
             output='screen',
-            prefix='xterm -e',
+            prefix="xterm -e",
             parameters=[params_yaml_file]            
             )
     ])
