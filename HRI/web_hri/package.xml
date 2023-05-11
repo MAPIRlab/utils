@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>webHRI</name>
+  <name>web_hri</name>
   <version>0.0.0</version>
   <description>Human Robot Interface through Google Chrome API</description>
   <maintainer email="jgmonroy@uma.es">Monroy</maintainer>
