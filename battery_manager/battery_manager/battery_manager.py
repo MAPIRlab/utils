@@ -152,7 +152,8 @@ class Battery(Node):
 
     # New battery obs.
     def battery_msg_cb(self, new_bat_state):
-        # For filterint: Keep only the N most recent ones
+        #self.get_logger().info("New battery msg ...")
+        # For filtering: Keep only the N most recent ones
         self.list_battery_obs.append(new_bat_state)
         if len(self.list_battery_obs) > self.filter_lenght:
             self.list_battery_obs.pop(0)

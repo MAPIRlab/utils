@@ -16,11 +16,11 @@
 class CwebInterface: public rclcpp::Node
 {
     public:
-        CwebInterface(): Node("ChromeHRI"){}
+        CwebInterface(): Node("web_hri"){}
 
         ~CwebInterface(){
             // close chrome?
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[webHRI] Closing Chrome");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[web_hri] Closing Chrome");
             system("wmctrl -c 'MAPIR HRI'");
         }
 
@@ -31,7 +31,7 @@ class CwebInterface: public rclcpp::Node
             // see extension configuration parameters
 
             // may throw ament_index_cpp::PackageNotFoundError exception
-            std::string package_share_directory = ament_index_cpp::get_package_share_directory("webHRI");
+            std::string package_share_directory = ament_index_cpp::get_package_share_directory("web_hri");
 
             std::ostringstream s;
             s << "/opt/google/chrome/google-chrome --new-window " << package_share_directory.c_str() << "/web/web_hri.html &";
