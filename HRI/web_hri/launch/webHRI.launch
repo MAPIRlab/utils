@@ -4,5 +4,5 @@
   See the extension parameters to configure the MQTT broker and topic
 -->
 <launch>
-  <node pkg="webHRI" exec="webHRI" name="webHRI" output="screen" launch-prefix="xterm -e" />
+  <node pkg="web_hri" exec="web_hri" name="web_hri" output="screen" launch-prefix="xterm -e" />
 </launch>

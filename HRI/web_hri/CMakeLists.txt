@@ -18,12 +18,12 @@ find_package(std_msgs REQUIRED)
 include_directories(include)
 
 # Add Executables
-add_executable(webHRI src/web_hri.cpp)
-ament_target_dependencies(webHRI rclcpp std_msgs)
+add_executable(web_hri src/web_hri.cpp)
+ament_target_dependencies(web_hri rclcpp std_msgs)
 
 # Declare and install executables
 install(TARGETS
-  webHRI
+  web_hri
   DESTINATION lib/${PROJECT_NAME}
 )
 
