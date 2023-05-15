@@ -1,0 +1,18 @@
+[submodule "Odometry/SRF"]
+	path = Odometry/SRF
+	url = git@github.com:MAPIRlab/srf_laser_odometry.git
+[submodule "Odometry/RF2O"]
+	path = Odometry/RF2O
+	url = git@github.com:MAPIRlab/rf2o_laser_odometry.git
+[submodule "Mapping/Sigma_FP"]
+	path = Mapping/Sigma_FP
+	url = git@github.com:MAPIRlab/Sigma-FP.git
+[submodule "Mapping/LTC-Mapping"]
+	path = Mapping/LTC-Mapping
+	url = git@github.com:MAPIRlab/LTC-Mapping.git
+[submodule "Navigation/NavAssistant"]
+	path = Navigation/NavAssistant
+	url = git@github.com:MAPIRlab/navigation-assistant.git
+[submodule "HRI/people-detection"]
+	path = HRI/people-detection
+	url = git@github.com:MAPIRlab/people_detection.git
