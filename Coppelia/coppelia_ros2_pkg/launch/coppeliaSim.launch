@@ -1,7 +1,7 @@
 <launch>
   <node pkg="coppelia_ros2_pkg" exec="coppelia_simulator" name="coppelia_simulator" output="screen" launch-prefix="xterm -e">
     # SIMULATOR PARAMETERS
-    <param name="coppelia_root_dir" value="~/CoppeliaSim_Edu_V4_4_0_rev0_Ubuntu20_04" />
+    <param name="coppelia_root_dir" value="$(env COPPELIASIM_ROOT_DIR)" />
     <param name="coppelia_scene_path" value="$(find-pkg-share coppelia_ros2_pkg)/scenes/ros2_mapirlab_pioneer.ttt" />
     <param name="coppelia_headless" value="False" />
     
