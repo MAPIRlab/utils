@@ -16,3 +16,6 @@
 [submodule "HRI/people-detection"]
 	path = HRI/people-detection
 	url = git@github.com:MAPIRlab/people_detection.git
+[submodule "Coppelia/sim_ros2_interface"]
+	path = Coppelia/sim_ros2_interface
+	url = git@github.com:MAPIRlab/Coppelia-simExtROS2-FORK.git
