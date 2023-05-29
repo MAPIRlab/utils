@@ -17,11 +17,6 @@ ament_export_libraries(RemoteAPIClient)
 
 
 install(
-  DIRECTORY ${COPPELIA_REMOTE_API_DIR}
-  DESTINATION include/${PROJECT_NAME}
-)
-
-install(
     TARGETS RemoteAPIClient
     DESTINATION lib
 )
