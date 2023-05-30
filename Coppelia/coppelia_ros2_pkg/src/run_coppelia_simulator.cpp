@@ -19,6 +19,11 @@ class CoppeliaSim: public rclcpp::Node
       this->declare_parameter<bool>("coppelia_headless", false);
       this->get_parameter("coppelia_headless", coppelia_headless);
       
+      // Debug
+      RCLCPP_INFO(this->get_logger(),"coppelia_root_dir: %s", coppelia_dir.c_str());
+      RCLCPP_INFO(this->get_logger(),"coppelia_scene_path: %s", coppelia_scene.c_str());
+      RCLCPP_INFO(this->get_logger(),"coppelia_headless: %u", coppelia_headless);
+
       // Declare other params (for the scene)
       this->declare_parameter<bool>("show_laser", false);
       this->declare_parameter<bool>("tf_gt", false);

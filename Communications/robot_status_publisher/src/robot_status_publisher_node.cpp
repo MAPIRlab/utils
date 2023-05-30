@@ -30,7 +30,7 @@ CrobotStatus::CrobotStatus() : Node("CrobotStatus")
     statusRate = this->declare_parameter<double>("statusRate", 1.0);
     map_frame = this->declare_parameter<std::string>("map_frame", "map");
     base_frame = this->declare_parameter<std::string>("base_frame", "base_link");
-    battery_topic = this->declare_parameter<std::string>("battery_topic", "battery_filtered");
+    battery_topic = this->declare_parameter<std::string>("battery_topic", "/battery_filtered");
     
     // Subscribers
     //-------------    
@@ -63,13 +63,13 @@ void CrobotStatus::sendStatus()
 {
     // Send robot STATUS (json)
         //-------------------------
-        /* MAPIR FORMAT
+        /* FORMAT
             {
             "time" : {"temporality" : "timestamp", "t" : <timestamp>},
             "data" : { "pose" : "[x y phy]",
                        "topological_place" : "<LOCATION_CODE>",
                        "battery" : {"voltage" : "<float>", "percentage" : "<float[0-1]>", "power_supply_status" : "1=charging, 2-3=discharging, 4 =full"},
-                       "current_task":"IDLE/WM/CH..."
+                       "current_task":"IDLE, Talk, goto_pose,..."
                      }
             }
         */
@@ -122,6 +122,9 @@ void CrobotStatus::sendStatus()
         msg.key = "status";                  //MQTT-Subtopic where to publish the data
         msg.value = j.dump();
         status_pub->publish(msg);
+
+        // Debug
+        RCLCPP_INFO(this->get_logger(),"STATUS is: [%s]", msg.value.c_str());
     }
     catch(std::runtime_error& ex)
     {
