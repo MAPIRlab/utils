@@ -33,15 +33,24 @@ class CoppeliaSim: public rclcpp::Node
       this->declare_parameter<float>("var_w",0.0);
     }
     
+    int PID;
     void run()
     {
-      //system("~/CoppeliaSim_Edu_V4_3_0_rev10_Ubuntu20_04/coppeliaSim.sh -s ~/tfg_ros_simulation_ws/src/Coppelia_scenes/ros2_mobile_robot.ttt");
       if (coppelia_headless){
-        system( (coppelia_dir+"/coppeliaSim.sh -h -s "+ coppelia_scene + " &").c_str() );
+        PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
+        "-h", "-s", coppelia_scene.c_str(), "&", 
+        (char*)0 );
       }
       else{
-        system( (coppelia_dir+"/coppeliaSim.sh -s "+ coppelia_scene + " &").c_str() );
+        PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
+        "-s", coppelia_scene.c_str(), "&", 
+        (char*)0 );
       }
+    }
+
+    ~CoppeliaSim()
+    {
+        kill(PID, SIGTERM);
     }
     
   private:
@@ -55,15 +64,19 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
   
-  //create object
-  std::shared_ptr<CoppeliaSim> myNode = std::make_shared<CoppeliaSim>();
+  {
+    //create object
+    std::shared_ptr<CoppeliaSim> myNode = std::make_shared<CoppeliaSim>();
 
-  //launch simulator
-  myNode->run();
+    //launch simulator
+    myNode->run();
 
-  // Iterate (for param_server and related services)
-  printf("[CoppeliaSimulator] Simulator launched. Now spinning!");
-  rclcpp::spin(myNode);
+    // Iterate (for param_server and related services)
+    printf("[CoppeliaSimulator] Simulator launched. Now spinning!");
+    rclcpp::spin(myNode);
+
+    //destructor gets called
+  }
 
   rclcpp::shutdown();
   return 0;
