@@ -36,16 +36,16 @@ class CoppeliaSim: public rclcpp::Node
     int PID;
     void run()
     {
-      if (coppelia_headless){
-        PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
-        "-h", "-s", coppelia_scene.c_str(), "&", 
-        (char*)0 );
-      }
-      else{
-        PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
-        "-s", coppelia_scene.c_str(), "&", 
-        (char*)0 );
-      }
+        if (coppelia_headless){
+            PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
+            "-s", coppelia_scene.c_str(), "-h", "&", 
+            (char*)0 );
+        }
+        else{
+            PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
+            "-s", coppelia_scene.c_str(), "&", 
+            (char*)0 );
+        }
     }
 
     ~CoppeliaSim()
