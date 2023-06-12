@@ -1,0 +1,2 @@
+# Robot Status Publisher
+A pkg implementing a robot status publisher that periodically informs about the robot status, comprising battery level, localization pose, task being exucutted, etc. By default it publish this information over the /ros2mqtt topic that is also shared over the MQTT network to other apps.
