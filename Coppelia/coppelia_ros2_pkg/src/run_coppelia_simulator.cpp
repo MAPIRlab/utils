@@ -1,6 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <stdlib.h>
 #include <string>
+#include <RemoteAPIClient.h>
+#include <RemoteAPIObjects.h>
 
 
 class CoppeliaSim: public rclcpp::Node
@@ -18,7 +20,12 @@ class CoppeliaSim: public rclcpp::Node
       
       this->declare_parameter<bool>("coppelia_headless", false);
       this->get_parameter("coppelia_headless", coppelia_headless);
-      
+
+#if USE_API
+      this->declare_parameter<bool>("autoplay", true);
+      this->get_parameter("autoplay", autoplay);      
+#endif
+
       // Debug
       RCLCPP_INFO(this->get_logger(),"coppelia_root_dir: %s", coppelia_dir.c_str());
       RCLCPP_INFO(this->get_logger(),"coppelia_scene_path: %s", coppelia_scene.c_str());
@@ -33,29 +40,50 @@ class CoppeliaSim: public rclcpp::Node
       this->declare_parameter<float>("var_w",0.0);
     }
     
-    int PID;
     void run()
     {
-        if (coppelia_headless){
-            PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
-            "-s", coppelia_scene.c_str(), "-h", "&", 
-            (char*)0 );
+#if USE_API
+        //we are calling fork, so there will be two processes: one that runs coppelia, and one that interacts with it through the remote api
+        int this_pid = fork();
+        if(this_pid!=0) //parent process
+        {
+#endif
+            if (coppelia_headless){
+                execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
+                "-s", coppelia_scene.c_str(), "-h", "&", 
+                (char*)0 );
+            }
+            else{
+                execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
+                "-s", coppelia_scene.c_str(), "&", 
+                (char*)0 );
+            }
+#if USE_API
         }
-        else{
-            PID=execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
-            "-s", coppelia_scene.c_str(), "&", 
-            (char*)0 );
+        else //child process
+        {
+            client = std::make_unique<RemoteAPIClient>();
+            sim = std::make_unique<RemoteAPIObject::sim>(client.get());
+            if(autoplay)
+                sim->startSimulation();
+            else
+                sim->stopSimulation();
         }
+#endif
     }
 
     ~CoppeliaSim()
     {
-        kill(PID, SIGTERM);
     }
     
   private:
     std::string coppelia_dir, coppelia_scene;
     bool coppelia_headless;
+#if USE_API
+    bool autoplay;
+    std::unique_ptr<RemoteAPIClient> client;
+    std::unique_ptr<RemoteAPIObject::sim> sim;
+#endif
 };
 
       
