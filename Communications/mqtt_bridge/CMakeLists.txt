@@ -37,30 +37,27 @@ ament_target_dependencies(mqtt_bridge_node rclcpp diagnostic_msgs)
 #add_executable(CMQTTmosquitto src/CMQTTmosquitto.cpp)
 #ament_target_dependencies(CMQTTmosquitto rclcpp diagnostic_msgs)
 
+target_link_libraries(mqtt_bridge_node
+  #${catkin_LIBRARIES}
+  ${MOSQUITTO_LIBRARIES}
+)
+
 install(TARGETS
   mqtt_bridge_node
   #CMQTTmosquitto
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# Install launch files and related config files.
 install(
-  DIRECTORY include/
-  DESTINATION include
-)
-
-target_link_libraries(mqtt_bridge_node
-  ${catkin_LIBRARIES}
-  ${MOSQUITTO_LIBRARIES}
+  #DIRECTORY include/
+  #DESTINATION include
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_export_include_directories(
   include
-)
-
-# Install launch files and related config files.
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_package()
