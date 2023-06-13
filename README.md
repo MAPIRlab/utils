@@ -14,3 +14,8 @@ For the next times:
 ```
 git submodule update --recursive
 ```
+## Sub-modules not yet in ROS2
+The following pkgs included as submodules in the "utils" repository are not yet fully migrated to ROS2. You may need to add a COLCON_IGNORE file.
+- Odometry/SRF
+- Mapping/Sigma_FP
+- HRI/people-detection
