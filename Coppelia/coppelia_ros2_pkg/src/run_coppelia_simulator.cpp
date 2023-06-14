@@ -1,8 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <stdlib.h>
 #include <string>
-#include <RemoteAPIClient.h>
-#include <RemoteAPIObjects.h>
 
 
 class CoppeliaSim: public rclcpp::Node
@@ -21,10 +19,11 @@ class CoppeliaSim: public rclcpp::Node
       this->declare_parameter<bool>("coppelia_headless", false);
       this->get_parameter("coppelia_headless", coppelia_headless);
 
-#if USE_API
+      this->declare_parameter<bool>("coppelia_verbose", false);
+      this->get_parameter("coppelia_verbose", coppelia_verbose);
+
       this->declare_parameter<bool>("autoplay", true);
-      this->get_parameter("autoplay", autoplay);      
-#endif
+      this->get_parameter("autoplay", autoplay);   
 
       // Debug
       RCLCPP_INFO(this->get_logger(),"coppelia_root_dir: %s", coppelia_dir.c_str());
@@ -42,34 +41,24 @@ class CoppeliaSim: public rclcpp::Node
     
     void run()
     {
-#if USE_API
-        //we are calling fork, so there will be two processes: one that runs coppelia, and one that interacts with it through the remote api
-        int this_pid = fork();
-        if(this_pid!=0) //parent process
-        {
-#endif
-            if (coppelia_headless){
-                execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
-                "-s", coppelia_scene.c_str(), "-h", "&", 
-                (char*)0 );
-            }
-            else{
-                execl( (coppelia_dir+"/coppeliaSim.sh").c_str(), 
-                "-s", coppelia_scene.c_str(), "&", 
-                (char*)0 );
-            }
-#if USE_API
-        }
-        else //child process
-        {
-            client = std::make_unique<RemoteAPIClient>();
-            sim = std::make_unique<RemoteAPIObject::sim>(client.get());
-            if(autoplay)
-                sim->startSimulation();
-            else
-                sim->stopSimulation();
-        }
-#endif
+        std::vector<const char*> arguments;
+        arguments.push_back("coppeliaSim"); //process name, doesn't really do anything
+        arguments.push_back(coppelia_scene.c_str());
+
+        if (coppelia_headless)
+            arguments.push_back("-h");
+        if(autoplay)
+            arguments.push_back("-s");
+        if(coppelia_verbose)
+            arguments.push_back("-vinfos");
+        else
+            arguments.push_back("-vwarnings");
+
+
+        arguments.push_back("&");
+        arguments.push_back(nullptr); //signal end of argument list
+
+        execv( (coppelia_dir+"/coppeliaSim.sh").c_str(), ((char**) arguments.data()) );
     }
 
     ~CoppeliaSim()
@@ -79,11 +68,8 @@ class CoppeliaSim: public rclcpp::Node
   private:
     std::string coppelia_dir, coppelia_scene;
     bool coppelia_headless;
-#if USE_API
+    bool coppelia_verbose;
     bool autoplay;
-    std::unique_ptr<RemoteAPIClient> client;
-    std::unique_ptr<RemoteAPIObject::sim> sim;
-#endif
 };
 
       

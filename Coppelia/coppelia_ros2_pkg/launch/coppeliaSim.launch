@@ -1,13 +1,15 @@
 <launch>
     <arg name="coppelia_scene_path" default="$(find-pkg-share coppelia_ros2_pkg)/scenes/ros2_mapirlab_pioneer.ttt" />
     <arg name="coppelia_headless" default="False" />
-    <arg name="autoplay" default="True" />
+    <arg name="autoplay" default="False" />
+    <arg name="verbose" default="False" />
 
   <node pkg="coppelia_ros2_pkg" exec="coppelia_simulator" name="coppelia_simulator" output="screen" >
     # SIMULATOR PARAMETERS
     <param name="coppelia_root_dir" value="$(env COPPELIASIM_ROOT_DIR)" />
     <param name="coppelia_scene_path" value="$(var coppelia_scene_path)" />
     <param name="coppelia_headless" value="$(var coppelia_headless)" />
+    <param name="coppelia_verbose" value="$(var verbose)" />
     <param name="autoplay" value="$(var autoplay)" />
     
     # SCENE PARAMETERS (must be declared in sim_ros2_interface)

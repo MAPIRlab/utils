@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 project(coppelia_ros2_pkg)
 
 
-set(USE_API ON)
-
-
 set(CMAKE_BUILD_TYPE "None")
 set(CMAKE_CXX_FLAGS "-std=c++17 -g -Og ${CMAKE_CXX_FLAGS}")
 
@@ -24,13 +21,8 @@ DEPENDENCIES builtin_interfaces std_msgs
 # Add Executables
 add_executable(coppelia_simulator src/run_coppelia_simulator.cpp)
 
-if(USE_API)
-    find_package(coppelia_remote_api REQUIRED)
-    target_link_libraries(coppelia_simulator zmq)
-    target_compile_definitions(coppelia_simulator PRIVATE -DUSE_API)
-endif()
 
-ament_target_dependencies(coppelia_simulator rclcpp coppelia_remote_api)
+ament_target_dependencies(coppelia_simulator rclcpp)
 
 
 
