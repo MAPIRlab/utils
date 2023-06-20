@@ -14,6 +14,7 @@ ament_export_include_directories(
     ${CMAKE_BINARY_DIR}/zmqRemoteApi/jsoncons/include
     )
 ament_export_libraries(RemoteAPIClient)
+ament_export_libraries(zmq)
 
 
 install(
