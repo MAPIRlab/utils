@@ -31,17 +31,11 @@ using namespace std;
         topic = MQTT_topicName/my_topic    <-->    key=my_topic
 **/
 
-
+// Ugly global var -_-
+CMQTTMosquitto *MQTTconnector;
 
 // Callback function when new ROS msg is received on topic "ros2mqtt"
 // Transform the ROS msg to MQTT format and publish it
-
-char id [100];
-CMQTTMosquitto *MQTTconnector= new CMQTTMosquitto(id);
-
-//MQTTconnector 
-
-
 void ros2mqtt_callback(const diagnostic_msgs::msg::KeyValue msg)
 {
 
@@ -64,11 +58,11 @@ int main(int argc, char** argv)
 
     // Init mosquittopp lib (providing an unique ID)
     char id [100];
-
     sprintf(id, "UMArobot_%f", rclcpp::Clock().now().seconds());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Connecting to mosquittopp with ID: %s",id);
 
-
+    //MQTTconnector 
+    MQTTconnector = new CMQTTMosquitto(id);
 
     // Topics
     using std::placeholders::_1;

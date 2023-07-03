@@ -15,7 +15,7 @@ using namespace std;
 class CMQTTMosquitto : public mosqpp::mosquittopp
 {
 public:
-    CMQTTMosquitto(const char *id) : mosquittopp("Mosquito")
+    CMQTTMosquitto(const char *id) : mosquittopp(id)
     {
         mosqpp::lib_init();			// Initialize libmosquitto
         append_timestamp = false;   // init
