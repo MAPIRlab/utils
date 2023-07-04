@@ -16,23 +16,24 @@ using namespace std;
  - ROS controls the robots locally and is based on a Topic pub/sub system
 
  The bridge:
-      Passes orders from Mosquitto (on the MQTT topic "MQTT_topicName/#") to the ROS Robot Operating System (ROS topic: mqtt2ros)
-      Passes commands from ROS topic (ROS topic: ros2mqtt) to MQTT mosquitto MQTT_topicName/#
+      Passes orders from Mosquitto (on the MQTT topic "MQTT_namespace/#") to the ROS Robot Operating System (ROS topic: mqtt2ros)
+      Passes commands from ROS topic (ROS topic: ros2mqtt) to MQTT mosquitto MQTT_namespace/#
 
 	      MQTT                       ROS
-	MQTT_topicName/#       -->     mqtt2ros
-	MQTT_topicName/#       <--     ros2mqtt
+	MQTT_namespace/#       -->     mqtt2ros
+	MQTT_namespace/#       <--     ros2mqtt
 
 	MQTT_msg   to  ROS_msg conversion:
 	topic     <-->   key
 	payload   <-->   value
 
- note: In MQTT all topic names will have the prefix "MQTT_topicName", that is:
-        topic = MQTT_topicName/my_topic    <-->    key=my_topic
+ note: In MQTT topic names can have the prefix "MQTT_namespace" automatically added, following the ROS topic name convention, that is:
+        key=/my_topic -->  /my_topic
+        key=my_topic -->  /MQTT_namespace/my_topic
 **/
 
-// Ugly global var -_-
-std::unique_ptr<CMQTTMosquitto> MQTTconnector;
+
+static std::unique_ptr<CMQTTMosquitto> MQTTconnector;
 
 // Callback function when new ROS msg is received on topic "ros2mqtt"
 // Transform the ROS msg to MQTT format and publish it
@@ -47,7 +48,7 @@ void ros2mqtt_callback(const diagnostic_msgs::msg::KeyValue msg)
     if(msg.key.at(0)=='/')
         topic=msg.key;
     else
-        topic=MQTTconnector->MQTT_topicName+"/"+msg.key;
+        topic=MQTTconnector->MQTT_namespace+"/"+msg.key;
 
     MQTTconnector->on_publish(NULL, 
                                 topic.c_str(), 
@@ -92,7 +93,9 @@ int main(int argc, char** argv)
 
     MQTTconnector->broker_password = node->declare_parameter<std::string>("password", "");
 
-    MQTTconnector->MQTT_topicName = node->declare_parameter<std::string>("MQTT_topicName", "MAPIR_robot"); //To allow multiple robots.
+    MQTTconnector->MQTT_namespace = node->declare_parameter<std::string>("MQTT_namespace", "MAPIR_robot"); //To allow multiple robots.
+    if(MQTTconnector->MQTT_namespace.at(0) != '/')
+        MQTTconnector->MQTT_namespace = '/' + MQTTconnector->MQTT_namespace;
 
     MQTTconnector->MQTT_topics_subscribe = node->declare_parameter<std::string>("MQTT_topics_subscribe", "NavigationCommand,ClientACK,ServerACK");
 

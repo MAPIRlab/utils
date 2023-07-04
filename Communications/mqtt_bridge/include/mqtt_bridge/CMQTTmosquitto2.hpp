@@ -46,12 +46,12 @@ public:
                     if(tokenInList.at(0)=='/')
                         completeTopic = tokenInList;
                     else
-                        completeTopic = MQTT_topicName+"/"+tokenInList;
+                        completeTopic = MQTT_namespace+"/"+tokenInList;
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Subscribing to %s",completeTopic.c_str() );
 
                     int rc = subscribe(NULL, completeTopic.c_str(), 0);
                     if (rc)
-                        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Error: failed to subscribe to %s/# with error code %u", MQTT_topicName.c_str(), rc);
+                        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Error: failed to subscribe to %s/# with error code %u", MQTT_namespace.c_str(), rc);
 
                     if (pos == -1)
                     {
@@ -164,7 +164,7 @@ public:
     };
 
     //variables
-    std::string broker_host, broker_username, broker_password, MQTT_topicName, MQTT_topics_subscribe;
+    std::string broker_host, broker_username, broker_password, MQTT_namespace, MQTT_topics_subscribe;
     int broker_port;
     bool append_timestamp;
     rclcpp::Publisher<diagnostic_msgs::msg::KeyValue>::SharedPtr ros_pub;
