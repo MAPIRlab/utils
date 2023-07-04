@@ -126,11 +126,6 @@ public:
 
         RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Received msg from MQTT: topic=%s   value=%s", msgTopic.c_str(), msgLoad.c_str());
 
-        //First element of topic is robotID (i.e RobotID/topic). Substract it!
-        size_t pos = msgTopic.find("/");
-        msgTopic.erase(0, pos+1);
-
-
         //Publish msg on ROS Topic mqtt2ros
         diagnostic_msgs::msg::KeyValue msg;
         msg.key = msgTopic;
