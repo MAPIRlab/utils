@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
     // Init mosquittopp lib (providing an unique ID)
     char id [100];
-    sprintf(id, "UMArobot_%f", rclcpp::Clock().now().nanoseconds());
+    sprintf(id, "UMArobot_%f", rclcpp::Clock().now().seconds());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Connecting to mosquittopp with ID: %s",id);
 
     //MQTTconnector 

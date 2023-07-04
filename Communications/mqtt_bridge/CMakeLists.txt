@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(mqtt_bridge)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+
+set(CMAKE_BUILD_TYPE "None") 
+set(CMAKE_CXX_FLAGS "-std=c++17 -g -O2 ${CMAKE_CXX_FLAGS}")
 
 # find dependencies
 find_package(ament_cmake REQUIRED)

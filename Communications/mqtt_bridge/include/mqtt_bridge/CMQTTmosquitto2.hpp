@@ -28,7 +28,6 @@ public:
             case 0:
             {
                 // Successful connect
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Subscribing to MQTT topic %s, and %s sub-topics.", MQTT_topicName.c_str(), MQTT_topics_subscribe.c_str() );
                 //Subscribe to list of MQTT topics
                 bool more_topics = true;
                 std::string myTopics = MQTT_topics_subscribe;
@@ -38,10 +37,17 @@ public:
                     //hande absolute topic names ("/topic") vs namespace-relative ones ("topic")
                     std::string tokenInList = myTopics.substr(0, pos);
                     std::string completeTopic;
+
+                    //remove whitespaces
+                    while(tokenInList.at(0)==' ')
+                        tokenInList.substr(1);
+
+
                     if(tokenInList.at(0)=='/')
                         completeTopic = tokenInList;
                     else
                         completeTopic = MQTT_topicName+"/"+tokenInList;
+                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Subscribing to %s",completeTopic.c_str() );
 
                     int rc = subscribe(NULL, completeTopic.c_str(), 0);
                     if (rc)
