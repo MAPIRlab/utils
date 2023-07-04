@@ -35,7 +35,15 @@ public:
                 while(more_topics)
                 {
                     size_t pos = myTopics.find(",");
-                    int rc = subscribe(NULL, (MQTT_topicName+"/"+myTopics.substr(0, pos)).c_str(), 0);
+                    //hande absolute topic names ("/topic") vs namespace-relative ones ("topic")
+                    std::string tokenInList = myTopics.substr(0, pos);
+                    std::string completeTopic;
+                    if(tokenInList.at(0)=='/')
+                        completeTopic = tokenInList;
+                    else
+                        completeTopic = MQTT_topicName+"/"+tokenInList;
+
+                    int rc = subscribe(NULL, completeTopic.c_str(), 0);
                     if (rc)
                         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Error: failed to subscribe to %s/# with error code %u", MQTT_topicName.c_str(), rc);
 
@@ -59,7 +67,7 @@ public:
                 //Set last-will
                 char lastWill [100];
                 sprintf(lastWill, "ByeMQTT");
-                int novalgopana = will_set("lastWill", 7, lastWill, 2, true);
+                will_set("lastWill", 7, lastWill, 2, true);
 
                 break;
             }
@@ -89,15 +97,15 @@ public:
         if(rc!=MOSQ_ERR_SUCCESS)
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Connection lost with MQTT broker, error code: %u. Reconnecting...", rc);
-            int go = disconnect();
-            int g = mosqpp::lib_cleanup();
-            int gogo = mosqpp::lib_init();
+            disconnect();
+            mosqpp::lib_cleanup();
+            mosqpp::lib_init();
             if (broker_username != "")
             {	
                 if(username_pw_set(broker_username.c_str(), broker_password.c_str()) )
                     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Error setting username and password");
             }        
-            int rc = connect(broker_host.c_str(), broker_port, 30);
+            connect(broker_host.c_str(), broker_port, 30);
 
             //On success, subscribe to MQTT topic
             //on_connect(rc);
@@ -123,7 +131,9 @@ public:
         msg.value = msgLoad;
         //Publish on mqtt2ros
         ros_pub->publish(msg);
+        delete[] cstr;
     };
+
     void on_publish(int *mid, const char *topic, int payloadlen, const void *payload){
         if (append_timestamp)
         {
@@ -137,12 +147,13 @@ public:
             payloadlen = strlen(myPayload.c_str());
 
             //Send message over MQTT with qos=0
-            int n = publish(mid, topic, payloadlen, myPayload.c_str(),0,false);
+            publish(mid, topic, payloadlen, myPayload.c_str(),0,false);
+            delete[] cstr;
         }
         else
         {
             //Send message over MQTT with qos=0
-            int n = publish(mid, topic, payloadlen, payload, 0, false);
+            publish(mid, topic, payloadlen, payload, 0, false);
         }
     };
 

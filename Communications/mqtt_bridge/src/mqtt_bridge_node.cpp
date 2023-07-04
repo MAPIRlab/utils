@@ -32,7 +32,7 @@ using namespace std;
 **/
 
 // Ugly global var -_-
-CMQTTMosquitto *MQTTconnector;
+std::unique_ptr<CMQTTMosquitto> MQTTconnector;
 
 // Callback function when new ROS msg is received on topic "ros2mqtt"
 // Transform the ROS msg to MQTT format and publish it
@@ -41,9 +41,16 @@ void ros2mqtt_callback(const diagnostic_msgs::msg::KeyValue msg)
 
     RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"),"Sending msg to MQTT: topic=%s    value=:%s", 
               msg.key.c_str(), msg.value.c_str());
-    //publish(NULL, topic_name, payload_length, data)
+
+    //hande absolute topic names ("/topic") vs namespace-relative ones ("topic")
+    std::string topic;
+    if(msg.key.at(0)=='/')
+        topic=msg.key;
+    else
+        topic=MQTTconnector->MQTT_topicName+"/"+msg.key;
+
     MQTTconnector->on_publish(NULL, 
-                                (MQTTconnector->MQTT_topicName+"/"+msg.key).c_str(), 
+                                topic.c_str(), 
                                 strlen(msg.value.c_str()), 
                                 msg.value.c_str());
 }
@@ -58,11 +65,11 @@ int main(int argc, char** argv)
 
     // Init mosquittopp lib (providing an unique ID)
     char id [100];
-    sprintf(id, "UMArobot_%f", rclcpp::Clock().now().seconds());
+    sprintf(id, "UMArobot_%f", rclcpp::Clock().now().nanoseconds());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[mqtt_bridge] Connecting to mosquittopp with ID: %s",id);
 
     //MQTTconnector 
-    MQTTconnector = new CMQTTMosquitto(id);
+    MQTTconnector = std::make_unique<CMQTTMosquitto>(id);
 
     // Topics
     using std::placeholders::_1;
