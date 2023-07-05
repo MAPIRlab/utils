@@ -93,7 +93,7 @@ public:
             if(_namespace == "/")
                 _namespace = "";
 
-            return fmt::format("{}/{}", get_namespace(), topicName);
+            return fmt::format("{}/{}", _namespace, topicName);
         }
         return topicName;
     }

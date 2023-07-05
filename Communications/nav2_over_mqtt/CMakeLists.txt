@@ -37,8 +37,14 @@ ${AMENT_DEPS})
 target_link_libraries(nav2MqttSender spdlog::spdlog) 
 
 
+#test node
+add_executable(testNode src/testNode.cpp)
+ament_target_dependencies(testNode
+${AMENT_DEPS}
+) 
+
 install(
-  TARGETS mqtt2Nav2 nav2MqttSender
+  TARGETS mqtt2Nav2 nav2MqttSender testNode
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()
