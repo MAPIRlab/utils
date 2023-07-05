@@ -38,10 +38,10 @@ public:
     {
         if(msg->key == receive_goal_topic_mqtt)
         {
-            nlohmann::json json(msg->value);
+            nlohmann::json json = nlohmann::json::parse(msg->value);
 
             //action [navigate, cancel]
-            std::string action = json["action"];
+            std::string action = json["action"].get<std::string>();
             if(action == "navigate")
             {
                 goal.pose = nav2MQTT::from_json(json);

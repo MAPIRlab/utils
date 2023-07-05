@@ -27,7 +27,7 @@ namespace nav2MQTT
     {
         geometry_msgs::msg::PoseStamped pose;
 
-        pose.header.frame_id = json["header"]["frame_id"];
+        pose.header.frame_id = json["header"]["frame_id"].get<std::string>();
 
         pose.pose.position.x = json["pose"]["position"]["x"].get<double>();
         pose.pose.position.y = json["pose"]["position"]["y"].get<double>();

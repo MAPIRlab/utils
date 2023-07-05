@@ -63,7 +63,7 @@ public:
         RCLCPP_INFO(this->get_logger(), "Accepted goal");
         
         nlohmann::json json = nav2MQTT::to_json(goal_handle->get_goal()->pose);
-        json["action"] = "cancel";
+        json["action"] = "navigate";
 
         KeyValue msg;
             msg.key = goalTopic;
