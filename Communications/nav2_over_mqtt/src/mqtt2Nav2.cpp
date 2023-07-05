@@ -50,12 +50,16 @@ public:
                 rclcpp_action::Client<NavToPose>::SendGoalOptions options;
                 options.result_callback = std::bind(&Mqtt2Nav2::nav2GoalDone, this, std::placeholders::_1);
                 nav2client->async_send_goal(goal);
+                spdlog::info("Sending goal to nav2");
             }
             else if (action == "cancel")
+            {
                 nav2client->async_cancel_all_goals();
+                spdlog::info("Cancelling goal");
+            }
             
             else
-                spdlog::error("Unknown action requested: {}", action);
+                spdlog::error("Unknown action requested: {}. Must be one of[\"navigate\", \"cancel\"]", action);
         }
     }
 
@@ -63,6 +67,7 @@ public:
     {
         nlohmann::json json;
         json["action_result_code"] = result.code;
+        spdlog::info("Goal complete, sending result");
 
         KeyValue msg;
         msg.key = send_result_topic_mqtt;
