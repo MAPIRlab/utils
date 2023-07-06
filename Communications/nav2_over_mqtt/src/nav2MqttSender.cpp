@@ -18,6 +18,8 @@ public:
     rclcpp::Subscription<KeyValue>::SharedPtr mqttSub;
     std::string goalTopic, resultTopic;
 
+    std::shared_ptr<rclcpp_action::ServerGoalHandle<NavToPose>> m_activeGoalHandle;
+
     Nav2MQTT() : Node("Nav2MQTT")
     {
         using namespace std::placeholders;
@@ -62,6 +64,7 @@ public:
     {
         RCLCPP_INFO(this->get_logger(), "Accepted goal");
         
+        m_activeGoalHandle = goal_handle;
         nlohmann::json json = nav2MQTT::to_json(goal_handle->get_goal()->pose);
         json["action"] = "navigate";
 
@@ -78,8 +81,18 @@ public:
         {
             nlohmann::json json(msg->value);
             int code = json["action_result_code"].get<int>();
-            if(code != (int)rclcpp_action::ResultCode::SUCCEEDED)
+
+            auto result = std::make_shared<nav2_msgs::action::NavigateToPose_Result>();
+            if(code == (int)rclcpp_action::ResultCode::SUCCEEDED)
+            {
+                RCLCPP_INFO(get_logger(), "Goal completed");
+                m_activeGoalHandle->succeed(result);
+            }
+            else
+            {
                 RCLCPP_WARN(get_logger(), "Goal result was not \"success\". Code: %d . See rclcpp_action::ResultCode for human-readable meaning", code);
+                m_activeGoalHandle->abort(result);
+            }
         }
     }
 
