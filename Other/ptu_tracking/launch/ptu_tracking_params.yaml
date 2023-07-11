@@ -1,0 +1,10 @@
+#-------------------------------------------------
+# (status_publisher)
+#-------------------------------------------------
+status_publisher:
+  ros__parameters:
+    output_topic: "/ros2mqtt"
+    statusRate: 1.0
+    map_frame: "map"
+    base_frame: "base_link"
+    battery_topic: "battery_filtered"  
