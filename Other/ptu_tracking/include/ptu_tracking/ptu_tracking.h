@@ -9,10 +9,12 @@
 #define CrobotStatus_H
 
 #include "rclcpp/rclcpp.hpp"
-// ros2 msgs
+// ptu d46
 #include "ptu_interfaces/srv/set_pan_tilt.hpp"
 #include "ptu_interfaces/srv/set_pan_tilt_speed.hpp"
 #include "ptu_interfaces/msg/ptu.hpp"
+// ptu interbotix wxxms
+#include "interbotix_xs_msgs/msg/joint_group_command.hpp"
 
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
@@ -42,16 +44,22 @@ public:
     std::unique_ptr<tf2_ros::Buffer> tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     std::shared_ptr<tf2_ros::TransformListener> listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
-    // PTU client
+    // PTU D46 client
     rclcpp::Subscription<ptu_interfaces::msg::PTU>::SharedPtr ptu_sub;
     rclcpp::Client<ptu_interfaces::srv::SetPanTilt>::SharedPtr pan_tilt_client;
     rclcpp::Client<ptu_interfaces::srv::SetPanTiltSpeed>::SharedPtr speed_client;
     std::shared_ptr<ptu_interfaces::srv::SetPanTilt::Request> request = std::make_shared<ptu_interfaces::srv::SetPanTilt::Request>();
 
+    // PTU intebotix
+    rclcpp::Publisher<interbotix_xs_msgs::msg::JointGroupCommand>::SharedPtr ptu_interbotix_pub;
+
+
 protected:
     ptu_interfaces::msg::PTU current_ptu_state;
     void ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_state);
     bool initialized;
+    bool ptu_d46;
+    void ptu_send_pan_tilt(float pan, float tilt);
 };
 
 #endif

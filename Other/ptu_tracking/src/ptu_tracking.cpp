@@ -30,40 +30,47 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     ptu_frame = this->declare_parameter<std::string>("ptu_frame_id", "ptu_link");
     loopRate = this->declare_parameter<double>("loopRate", 1.0);
     ptu_state_topic = this->declare_parameter<std::string>("ptu_state_topic", "/ptu/state");
-        
-    // Service Clients for PTU
-    //------------------------
-    ptu_sub = this->create_subscription<ptu_interfaces::msg::PTU>(ptu_state_topic, 1, std::bind(&CptuTrack::ptuStateCallBack, this, _1));
-    pan_tilt_client = this->create_client<ptu_interfaces::srv::SetPanTilt>("/ptu/set_pan_tilt");  
-    speed_client = this->create_client<ptu_interfaces::srv::SetPanTiltSpeed>("/ptu/set_pan_tilt_speed");  
+    ptu_d46 = false;
 
-    // Wait for pan&tilt (srv)
-    while (!pan_tilt_client->wait_for_service(1s)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
-            return;
+    // Service Clients for PTU
+    //------------------------    
+    if (ptu_d46)
+    {
+        ptu_sub = this->create_subscription<ptu_interfaces::msg::PTU>(ptu_state_topic, 1, std::bind(&CptuTrack::ptuStateCallBack, this, _1));
+        pan_tilt_client = this->create_client<ptu_interfaces::srv::SetPanTilt>("/ptu/set_pan_tilt");  
+        speed_client = this->create_client<ptu_interfaces::srv::SetPanTiltSpeed>("/ptu/set_pan_tilt_speed");  
+
+        // Wait for pan&tilt (srv)
+        while (!pan_tilt_client->wait_for_service(1s)) {
+            if (!rclcpp::ok()) {
+                RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+                return;
+            }
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not yet available, waiting again...");
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not yet available, waiting again...");
+
+        // Set speed
+        auto request_speed = std::make_shared<ptu_interfaces::srv::SetPanTiltSpeed::Request>();
+        request_speed->pan_speed = 1.5;
+        request_speed->tilt_speed = 1.5;
+        auto result_speed = speed_client->async_send_request(request_speed);
+    }
+    else
+    {
+        ptu_interbotix_pub = this->create_publisher<interbotix_xs_msgs::msg::JointGroupCommand>("commands/joint_group",1);
     }
     
-    // Test PTU
-    auto request_speed = std::make_shared<ptu_interfaces::srv::SetPanTiltSpeed::Request>();
-    request_speed->pan_speed = 1.5;
-    request_speed->tilt_speed = 1.5;
-    auto result_speed = speed_client->async_send_request(request_speed);
-
     // check movement
-    request->pan = 2.0;
-    request->tilt = 0.1;
-    auto result = pan_tilt_client->async_send_request(request);
-    sleep(2.0);
+    RCLCPP_INFO(this->get_logger(),"checking PTU conectivity....");
+    sleep(5.0);
+    ptu_send_pan_tilt(1.0, 0.2);     
+    sleep(3.0);
+    ptu_send_pan_tilt(-1.0, -0.2);
+    sleep(3.0);
+    ptu_send_pan_tilt(0.0, 0.0);
+    sleep(3.0);
    
-    // set (0,0)
-    request->pan = 0.0;
-    request->tilt = 0.0;
-    result = pan_tilt_client->async_send_request(request);
-
-    initialized = false;
+    initialized = true;
     RCLCPP_INFO(this->get_logger(),"Ready for Tracking....");
 }
 
@@ -81,6 +88,28 @@ void CptuTrack::ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_s
     initialized = true;
 }
 
+void CptuTrack::ptu_send_pan_tilt(float pan, float tilt)
+{
+
+    RCLCPP_INFO(this->get_logger(),"Requesting pan[%.2f] & tilt[%.2f]", pan, tilt);
+    if (ptu_d46)
+    {
+        // PTU D46: Command via service call
+        request->pan = pan;
+        request->tilt = tilt;
+        auto result = pan_tilt_client->async_send_request(request);
+    }
+    else
+    {
+        //PTU interbotix: Command via topi
+        interbotix_xs_msgs::msg::JointGroupCommand message;
+        message.name = "turret";
+        message.cmd.clear();
+        message.cmd.push_back(pan);
+        message.cmd.push_back(tilt);
+        ptu_interbotix_pub->publish(message);
+    }
+}
 
 void CptuTrack::track()
 {
@@ -95,12 +124,13 @@ void CptuTrack::track()
     geometry_msgs::msg::TransformStamped transform_tag, transform_camera;
     try 
     {
-        transform_tag = tf_buffer->lookupTransform(ptu_frame, tag_frame, tf2::TimePointZero,100ms);
-        transform_camera = tf_buffer->lookupTransform(ptu_frame, camera_frame, tf2::TimePointZero,100ms);
+        transform_tag = tf_buffer->lookupTransform(ptu_frame, tag_frame, tf2::TimePointZero,20ms);
+        transform_camera = tf_buffer->lookupTransform(ptu_frame, camera_frame, tf2::TimePointZero,200ms);
     } 
     catch(tf2::TransformException &ex) 
     {
         RCLCPP_WARN(this->get_logger(),"Exception while reading tf transforms -------> %s", ex.what());
+        RCLCPP_WARN(this->get_logger(),"TAG not in camera FOV");
         return;
     }
 
@@ -108,31 +138,48 @@ void CptuTrack::track()
     double tag_x = transform_tag.transform.translation.x;
     double tag_y = transform_tag.transform.translation.y;
     double tag_z = transform_tag.transform.translation.z;
-
-    double goal_pan = atan2(tag_y, tag_x);
+    double tag_pan = atan2(tag_y, tag_x);
+    double tag_tilt = -atan2(tag_z, tag_x);
     
-    // Command incrementally
-    if (abs(goal_pan - current_ptu_state.pan) > 0.5*M_PI/180) 
+    double camera_x = transform_camera.transform.translation.x;
+    double camera_y = transform_camera.transform.translation.y;
+    double camera_z = transform_camera.transform.translation.z;
+    double camera_pan = atan2(camera_y, camera_x);
+    RCLCPP_INFO(this->get_logger(),"tag_pan[%.2f], camera_pan[%.2f]", tag_pan, camera_pan);
+
+
+    bool one_step = true;
+
+    if (one_step)
     {
-        if (goal_pan - current_ptu_state.pan < 0)
+        // set goal pan in one step
+        ptu_send_pan_tilt(tag_pan, tag_tilt);
+    }    
+    else 
+    {
+        // Command incrementally
+        if (abs(tag_pan - current_ptu_state.pan) > 0.5*M_PI/180) 
         {
-            // pan-negative
-            request->pan = current_ptu_state.pan - M_PI/180;
-            RCLCPP_INFO(this->get_logger(),"Requesting (-)Pan: goal_pan[%.2f], current_pan[%.2f]", goal_pan, current_ptu_state.pan);
+            if (tag_pan - current_ptu_state.pan < 0)
+            {
+                // pan-negative
+                request->pan = current_ptu_state.pan - M_PI/180;
+                RCLCPP_INFO(this->get_logger(),"Requesting (-)Pan: tag_pan[%.2f], current_pan[%.2f]", tag_pan, current_ptu_state.pan);
+            }
+            else
+            {
+                //pan-positive
+                request->pan = current_ptu_state.pan + M_PI/180;
+                RCLCPP_INFO(this->get_logger(),"Requesting (+)Pan: tag_pan[%.2f], current_pan[%.2f]", tag_pan, current_ptu_state.pan);
+            }
+
+            // Set pan&tilt (srv request)
+            auto result = pan_tilt_client->async_send_request(request);
         }
         else
         {
-            //pan-positive
-            request->pan = current_ptu_state.pan + M_PI/180;
-            RCLCPP_INFO(this->get_logger(),"Requesting (+)Pan: goal_pan[%.2f], current_pan[%.2f]", goal_pan, current_ptu_state.pan);
+            RCLCPP_INFO(this->get_logger(),"Camera is aligned with Tag... doing nothing!");
         }
-
-        // Set pan&tilt (srv request)
-        auto result = pan_tilt_client->async_send_request(request);
-    }
-    else
-    {
-        RCLCPP_INFO(this->get_logger(),"Camera is aligned with Tag... doing nothing!");
     }
 }
 

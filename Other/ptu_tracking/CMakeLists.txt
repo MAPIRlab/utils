@@ -14,7 +14,11 @@ find_package(diagnostic_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(std_msgs REQUIRED)
+
+# ptu d46
 find_package(ptu_interfaces REQUIRED)
+# ptu interbotix
+find_package(interbotix_xs_msgs)
 
 find_package(Boost REQUIRED COMPONENTS system)
 
@@ -34,7 +38,8 @@ ament_target_dependencies(ptu_tracking
   diagnostic_msgs 
   tf2_ros 
   tf2 
-  std_msgs 
+  std_msgs
+  interbotix_xs_msgs
   Boost)
 
 target_link_libraries(ptu_tracking
