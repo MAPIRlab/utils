@@ -33,7 +33,8 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     ptu_d46 = false;
 
     // Service Clients for PTU
-    //------------------------    
+    //------------------------  
+    /*
     if (ptu_d46)
     {
         ptu_sub = this->create_subscription<ptu_interfaces::msg::PTU>(ptu_state_topic, 1, std::bind(&CptuTrack::ptuStateCallBack, this, _1));
@@ -56,6 +57,7 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
         auto result_speed = speed_client->async_send_request(request_speed);
     }
     else
+    */
     {
         ptu_interbotix_pub = this->create_publisher<interbotix_xs_msgs::msg::JointGroupCommand>("commands/joint_group",1);
     }
@@ -68,6 +70,8 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     ptu_send_pan_tilt(-1.0, -0.2);
     sleep(3.0);
     ptu_send_pan_tilt(0.0, 0.0);
+    current_ptu_pan = 0.0;
+    current_ptu_tilt = 0.0;
     sleep(3.0);
    
     initialized = true;
@@ -79,7 +83,7 @@ CptuTrack::~CptuTrack()
 {
 }
 
-
+/*
 void CptuTrack::ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_state)
 {
     // update ptu status
@@ -88,10 +92,12 @@ void CptuTrack::ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_s
     initialized = true;
 }
 
+*/
 void CptuTrack::ptu_send_pan_tilt(float pan, float tilt)
 {
 
     RCLCPP_INFO(this->get_logger(),"Requesting pan[%.2f] & tilt[%.2f]", pan, tilt);
+    /*
     if (ptu_d46)
     {
         // PTU D46: Command via service call
@@ -100,6 +106,7 @@ void CptuTrack::ptu_send_pan_tilt(float pan, float tilt)
         auto result = pan_tilt_client->async_send_request(request);
     }
     else
+    */
     {
         //PTU interbotix: Command via topi
         interbotix_xs_msgs::msg::JointGroupCommand message;
@@ -119,67 +126,78 @@ void CptuTrack::track()
         return;
     }
 
-
-    // 1. Get tag and camera poses with respect ptu
-    geometry_msgs::msg::TransformStamped transform_tag, transform_camera;
-    try 
-    {
-        transform_tag = tf_buffer->lookupTransform(ptu_frame, tag_frame, tf2::TimePointZero,20ms);
-        transform_camera = tf_buffer->lookupTransform(ptu_frame, camera_frame, tf2::TimePointZero,200ms);
-    } 
-    catch(tf2::TransformException &ex) 
-    {
-        RCLCPP_WARN(this->get_logger(),"Exception while reading tf transforms -------> %s", ex.what());
-        RCLCPP_WARN(this->get_logger(),"TAG not in camera FOV");
-        return;
-    }
-
-    // 2.Estimate pan&tilt 
-    double tag_x = transform_tag.transform.translation.x;
-    double tag_y = transform_tag.transform.translation.y;
-    double tag_z = transform_tag.transform.translation.z;
-    double tag_pan = atan2(tag_y, tag_x);
-    double tag_tilt = -atan2(tag_z, tag_x);
-    
-    double camera_x = transform_camera.transform.translation.x;
-    double camera_y = transform_camera.transform.translation.y;
-    double camera_z = transform_camera.transform.translation.z;
-    double camera_pan = atan2(camera_y, camera_x);
-    RCLCPP_INFO(this->get_logger(),"tag_pan[%.2f], camera_pan[%.2f]", tag_pan, camera_pan);
-
-
-    bool one_step = true;
+    bool one_step = false;
 
     if (one_step)
     {
+        // 1. Get tag and camera poses with respect ptu
+        geometry_msgs::msg::TransformStamped transform_tag, transform_camera;
+        try 
+        {
+            transform_tag = tf_buffer->lookupTransform(ptu_frame, tag_frame, tf2::TimePointZero,20ms);
+            transform_camera = tf_buffer->lookupTransform(ptu_frame, camera_frame, tf2::TimePointZero,200ms);
+        } 
+        catch(tf2::TransformException &ex) 
+        {
+            RCLCPP_WARN(this->get_logger(),"Exception while reading tf transforms -------> %s", ex.what());
+            RCLCPP_WARN(this->get_logger(),"TAG not in camera FOV");
+            return;
+        }
+
+        // 2.Estimate pan&tilt 
+        double tag_x = transform_tag.transform.translation.x;
+        double tag_y = transform_tag.transform.translation.y;
+        double tag_z = transform_tag.transform.translation.z;
+        double tag_pan = atan2(tag_y, tag_x);
+        double tag_tilt = -atan2(tag_z, tag_x);
+        
+        double camera_x = transform_camera.transform.translation.x;
+        double camera_y = transform_camera.transform.translation.y;
+        double camera_z = transform_camera.transform.translation.z;
+        double camera_pan = atan2(camera_y, camera_x);
+        double camera_tilt = -atan2(camera_z, camera_x);
+        RCLCPP_INFO(this->get_logger(),"tag_pan[%.2f], camera_pan[%.2f]", tag_pan, camera_pan);
+        RCLCPP_INFO(this->get_logger(),"tag_tilt[%.2f], camera_tilt[%.2f]", tag_tilt, camera_tilt);
+
         // set goal pan in one step
         ptu_send_pan_tilt(tag_pan, tag_tilt);
     }    
     else 
     {
         // Command incrementally
-        if (abs(tag_pan - current_ptu_state.pan) > 0.5*M_PI/180) 
-        {
-            if (tag_pan - current_ptu_state.pan < 0)
-            {
-                // pan-negative
-                request->pan = current_ptu_state.pan - M_PI/180;
-                RCLCPP_INFO(this->get_logger(),"Requesting (-)Pan: tag_pan[%.2f], current_pan[%.2f]", tag_pan, current_ptu_state.pan);
-            }
-            else
-            {
-                //pan-positive
-                request->pan = current_ptu_state.pan + M_PI/180;
-                RCLCPP_INFO(this->get_logger(),"Requesting (+)Pan: tag_pan[%.2f], current_pan[%.2f]", tag_pan, current_ptu_state.pan);
-            }
 
-            // Set pan&tilt (srv request)
-            auto result = pan_tilt_client->async_send_request(request);
-        }
-        else
+        // 1. Get tag pose with respect camera
+        geometry_msgs::msg::TransformStamped transform_tag;
+        try 
         {
-            RCLCPP_INFO(this->get_logger(),"Camera is aligned with Tag... doing nothing!");
+            transform_tag = tf_buffer->lookupTransform(camera_frame, tag_frame, tf2::TimePointZero,20ms);            
+        } 
+        catch(tf2::TransformException &ex) 
+        {
+            RCLCPP_WARN(this->get_logger(),"Exception while reading tf transforms -------> %s", ex.what());
+            RCLCPP_WARN(this->get_logger(),"TAG not in camera FOV");
+            return;
         }
+
+        // 2. Align to center of image
+        double tag_x = transform_tag.transform.translation.x;
+        double tag_y = transform_tag.transform.translation.y;
+        double cmd_pan, cmd_tilt;
+
+        // pan
+        if (tag_x > 0.03)
+            current_ptu_pan -= 0.03;
+        else if (tag_x < -0.03)
+            current_ptu_pan += 0.03;
+
+        // tilt
+        if (tag_y < -0.03)
+            current_ptu_tilt -= 0.03;
+        else if (tag_y > 0.03)
+            current_ptu_tilt += 0.03;  
+
+        // set goal pan in one step
+        ptu_send_pan_tilt(current_ptu_pan, current_ptu_tilt);      
     }
 }
 

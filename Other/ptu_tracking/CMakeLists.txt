@@ -16,7 +16,7 @@ find_package(tf2 REQUIRED)
 find_package(std_msgs REQUIRED)
 
 # ptu d46
-find_package(ptu_interfaces REQUIRED)
+#find_package(ptu_interfaces REQUIRED)
 # ptu interbotix
 find_package(interbotix_xs_msgs)
 
@@ -32,7 +32,7 @@ include_directories(
 add_executable(ptu_tracking src/ptu_tracking.cpp)
 ament_target_dependencies(ptu_tracking 
   rclcpp
-  ptu_interfaces 
+  #ptu_interfaces 
   geometry_msgs 
   sensor_msgs 
   diagnostic_msgs 
