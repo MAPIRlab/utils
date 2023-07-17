@@ -65,9 +65,9 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     // check movement
     RCLCPP_INFO(this->get_logger(),"checking PTU conectivity....");
     sleep(5.0);
-    ptu_send_pan_tilt(1.0, 0.2);     
+    ptu_send_pan_tilt(0.5, 0.2);     
     sleep(3.0);
-    ptu_send_pan_tilt(-1.0, -0.2);
+    ptu_send_pan_tilt(-0.5, -0.2);
     sleep(3.0);
     ptu_send_pan_tilt(0.0, 0.0);
     current_ptu_pan = 0.0;
@@ -81,6 +81,11 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
 
 CptuTrack::~CptuTrack()
 {
+    // check movement
+    RCLCPP_INFO(this->get_logger(),"Stopping PTU in (0,0)...");
+    ptu_send_pan_tilt(0.0, 0.0);
+    sleep(5.0);
+    RCLCPP_INFO(this->get_logger(),"See you later, aligator!");
 }
 
 /*
@@ -126,7 +131,7 @@ void CptuTrack::track()
         return;
     }
 
-    bool one_step = false;
+    bool one_step = true;
 
     if (one_step)
     {
@@ -135,7 +140,7 @@ void CptuTrack::track()
         try 
         {
             transform_tag = tf_buffer->lookupTransform(ptu_frame, tag_frame, tf2::TimePointZero,20ms);
-            transform_camera = tf_buffer->lookupTransform(ptu_frame, camera_frame, tf2::TimePointZero,200ms);
+            //transform_camera = tf_buffer->lookupTransform(ptu_frame, camera_frame, tf2::TimePointZero,200ms);
         } 
         catch(tf2::TransformException &ex) 
         {
@@ -151,6 +156,7 @@ void CptuTrack::track()
         double tag_pan = atan2(tag_y, tag_x);
         double tag_tilt = -atan2(tag_z, tag_x);
         
+        /*
         double camera_x = transform_camera.transform.translation.x;
         double camera_y = transform_camera.transform.translation.y;
         double camera_z = transform_camera.transform.translation.z;
@@ -158,7 +164,8 @@ void CptuTrack::track()
         double camera_tilt = -atan2(camera_z, camera_x);
         RCLCPP_INFO(this->get_logger(),"tag_pan[%.2f], camera_pan[%.2f]", tag_pan, camera_pan);
         RCLCPP_INFO(this->get_logger(),"tag_tilt[%.2f], camera_tilt[%.2f]", tag_tilt, camera_tilt);
-
+        */
+        
         // set goal pan in one step
         ptu_send_pan_tilt(tag_pan, tag_tilt);
     }    
@@ -185,16 +192,18 @@ void CptuTrack::track()
         double cmd_pan, cmd_tilt;
 
         // pan
-        if (tag_x > 0.03)
-            current_ptu_pan -= 0.03;
-        else if (tag_x < -0.03)
-            current_ptu_pan += 0.03;
+        double precission = 0.03;
+        double step_rad = 0.01;
+        if (tag_x > precission)
+            current_ptu_pan -= step_rad;    // rad (0.57deg)
+        else if (tag_x < -precission)
+            current_ptu_pan += step_rad;    // rad
 
         // tilt
-        if (tag_y < -0.03)
-            current_ptu_tilt -= 0.03;
-        else if (tag_y > 0.03)
-            current_ptu_tilt += 0.03;  
+        if (tag_y < -precission)
+            current_ptu_tilt -= step_rad;   // rad
+        else if (tag_y > precission)
+            current_ptu_tilt += step_rad;   // rad
 
         // set goal pan in one step
         ptu_send_pan_tilt(current_ptu_pan, current_ptu_tilt);      
