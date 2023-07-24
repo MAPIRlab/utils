@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <diagnostic_msgs/msg/key_value.hpp>
-#include <PoseJSON.hpp>
+#include <mqtt_serialization/PoseJSON.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
@@ -49,7 +49,7 @@ public:
     {
         RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
     
-        nlohmann::json json = nav2MQTT::to_json(goal_handle->get_goal()->pose);
+        nlohmann::json json = mqtt_serialization::pose_to_json(goal_handle->get_goal()->pose);
         json["action"] = "cancel";
 
         KeyValue msg;
@@ -65,7 +65,7 @@ public:
         RCLCPP_INFO(this->get_logger(), "Accepted goal");
         
         m_activeGoalHandle = goal_handle;
-        nlohmann::json json = nav2MQTT::to_json(goal_handle->get_goal()->pose);
+        nlohmann::json json = mqtt_serialization::pose_to_json(goal_handle->get_goal()->pose);
         json["action"] = "navigate";
 
         KeyValue msg;

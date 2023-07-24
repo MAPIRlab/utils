@@ -66,7 +66,22 @@ void CrobotStatus::sendStatus()
         /* FORMAT
             {
             "time" : {"temporality" : "timestamp", "t" : <timestamp>},
-            "data" : { "pose" : "[x y phy]",
+            "data" : { "pose" : "{
+                                    "position":
+                                    {
+                                        "x":<x>,
+                                        "y":<y>,
+                                        "z":<z>
+                                    },
+                                    "orientation":
+                                    {
+                                        "x":<x>,
+                                        "y":<y>,
+                                        "z":<z>,
+                                        "w":<w>,
+                                        "yaw":<yaw (radians)>,
+                                    },
+                                }
                        "topological_place" : "<LOCATION_CODE>",
                        "battery" : {"voltage" : "<float>", "percentage" : "<float[0-1]>", "power_supply_status" : "1=charging, 2-3=discharging, 4 =full"},
                        "current_task":"IDLE, Talk, goto_pose,..."
@@ -81,20 +96,18 @@ void CrobotStatus::sendStatus()
         j["time"]["t"] = std::to_string(rclcpp::Clock().now().seconds());
 
 
-        // 1. Add robot pose in the map_frame (x y phi(deg))
+        // 1. Add robot pose in the map_frame
         geometry_msgs::msg::TransformStamped transform;
         try {
             transform = tf_buffer->lookupTransform(map_frame, base_frame, tf2::TimePointZero,100ms);
-            double x = transform.transform.translation.x;
-            double y = transform.transform.translation.y;
-            tf2::Quaternion q;
-            q.setX(transform.transform.rotation.x);
-            q.setY(transform.transform.rotation.y);
-            q.setZ(transform.transform.rotation.z);
-            q.setW(transform.transform.rotation.w);
-            double yaw = tf2::getYaw(q) *180/M_PI;
+            geometry_msgs::msg::PoseStamped pose;
+            pose.header = transform.header;
+            pose.pose.position.x = transform.transform.translation.x;
+            pose.pose.position.y = transform.transform.translation.y;
+            pose.pose.position.z = transform.transform.translation.z;
+            pose.pose.orientation = transform.transform.rotation;
             // format as JSON
-            j["data"]["pose"] = boost::str( boost::format("[%.3f %.3f %.3f]") % x % y % yaw );
+            j["data"]["pose"] = mqtt_serialization::pose_to_json(pose);
             
         } catch(tf2::TransformException &ex) {
             RCLCPP_WARN(this->get_logger(),"Exception while reading the robot pose -------> %s", ex.what());

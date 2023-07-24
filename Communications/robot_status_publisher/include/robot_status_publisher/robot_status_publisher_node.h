@@ -24,7 +24,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 // json
-#include <robot_status_publisher/json.hpp>
+#include <mqtt_serialization/PoseJSON.hpp>
 
 
 class CrobotStatus: public rclcpp::Node

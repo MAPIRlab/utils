@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <diagnostic_msgs/msg/key_value.hpp>
-#include <PoseJSON.hpp>
+#include <mqtt_serialization/PoseJSON.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
@@ -44,7 +44,7 @@ public:
             std::string action = json["action"].get<std::string>();
             if(action == "navigate")
             {
-                goal.pose = nav2MQTT::from_json(json);
+                goal.pose = mqtt_serialization::pose_from_json(json);
                 goal.pose.header.stamp = now();
 
                 rclcpp_action::Client<NavToPose>::SendGoalOptions options;

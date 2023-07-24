@@ -15,6 +15,7 @@ set(AMENT_DEPS
     nav2_msgs
     diagnostic_msgs
     spdlog
+    mqtt_serialization
     )
 
 foreach(Dependency IN ITEMS ${AMENT_DEPS})
