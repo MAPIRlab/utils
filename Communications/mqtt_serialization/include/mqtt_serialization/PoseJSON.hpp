@@ -3,7 +3,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "json.hpp"
 
-namespace mqtt_serialization 
+namespace mqtt_serialization
 {
     namespace Utils
     {
@@ -11,7 +11,7 @@ namespace mqtt_serialization
         {
             tf2::Quaternion tfquat;
             tf2::fromMsg(quat, tfquat);
-            
+
             tf2::Matrix3x3 m(tfquat);
             double roll, pitch, yaw;
             m.getRPY(roll, pitch, yaw);
@@ -19,7 +19,7 @@ namespace mqtt_serialization
         }
     }
 
-    static nlohmann::json pose_to_json(const geometry_msgs::msg::PoseStamped& pose) 
+    static nlohmann::json pose_to_json(const geometry_msgs::msg::PoseStamped& pose)
     {
         nlohmann::json json;
 
@@ -34,9 +34,9 @@ namespace mqtt_serialization
         json["pose"]["orientation"]["y"] = pose.pose.orientation.y;
         json["pose"]["orientation"]["z"] = pose.pose.orientation.z;
 
-        //aditional redundant orientation field for human-readability 
+        // aditional redundant orientation field for human-readability
         json["pose"]["orientation"]["yaw"] = Utils::getYaw(pose.pose.orientation);
-        
+
         return json;
     }
 
@@ -56,7 +56,7 @@ namespace mqtt_serialization
             pose.pose.orientation.y = json["pose"]["orientation"]["y"].get<double>();
             pose.pose.orientation.z = json["pose"]["orientation"]["z"].get<double>();
         }
-        catch(std::exception& e)
+        catch (std::exception& e)
         {
             RCLCPP_ERROR(rclcpp::get_logger("JSON_PARSER"), "Caught exception %s\n when trying to parse json-enconded pose: %s", e.what(), json.dump().c_str());
         }

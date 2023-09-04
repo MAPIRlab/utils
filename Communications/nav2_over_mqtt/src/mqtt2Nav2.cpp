@@ -6,10 +6,10 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
 
-using NavToPose=nav2_msgs::action::NavigateToPose;
-using KeyValue=diagnostic_msgs::msg::KeyValue;
+using NavToPose = nav2_msgs::action::NavigateToPose;
+using KeyValue = diagnostic_msgs::msg::KeyValue;
 
-class Mqtt2Nav2 : public  rclcpp::Node
+class Mqtt2Nav2 : public rclcpp::Node
 {
 public:
     NavToPose::Goal goal;
@@ -36,13 +36,13 @@ public:
 
     void MQTT_callback(KeyValue::SharedPtr msg)
     {
-        if(msg->key == receive_goal_topic_mqtt)
+        if (msg->key == receive_goal_topic_mqtt)
         {
             nlohmann::json json = nlohmann::json::parse(msg->value);
 
-            //action [navigate, cancel]
+            // action [navigate, cancel]
             std::string action = json["action"].get<std::string>();
-            if(action == "navigate")
+            if (action == "navigate")
             {
                 goal.pose = mqtt_serialization::pose_from_json(json);
                 goal.pose.header.stamp = now();
@@ -57,13 +57,13 @@ public:
                 nav2client->async_cancel_all_goals();
                 spdlog::info("Cancelling goal");
             }
-            
+
             else
                 spdlog::error("Unknown action requested: {}. Must be one of[\"navigate\", \"cancel\"]", action);
         }
     }
 
-    void nav2GoalDone(const rclcpp_action::ClientGoalHandle<NavToPose>::WrappedResult &result)
+    void nav2GoalDone(const rclcpp_action::ClientGoalHandle<NavToPose>::WrappedResult& result)
     {
         nlohmann::json json;
         json["action_result_code"] = result.code;
@@ -77,12 +77,12 @@ public:
 
     std::string applyNamespaceIfNeeded(std::string& topicName)
     {
-        if(topicName.at(0) != '/')
+        if (topicName.at(0) != '/')
         {
             std::string _namespace = get_namespace();
 
-            //handle the empty namespace
-            if(_namespace == "/")
+            // handle the empty namespace
+            if (_namespace == "/")
                 _namespace = "";
 
             return fmt::format("{}/{}", _namespace, topicName);
