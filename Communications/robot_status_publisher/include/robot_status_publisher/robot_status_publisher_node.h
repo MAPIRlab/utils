@@ -1,16 +1,16 @@
 /** ****************************************************************************************
-*  This node implements a simple publisher of the current robot status
-*  Designed to serve as a monitor of the robot status.
-*
-* Maintainer: Javier G. Monroy
-* MAPIR group: https://mapir.isa.uma.es/
-******************************************************************************************** */
+ *  This node implements a simple publisher of the current robot status
+ *  Designed to serve as a monitor of the robot status.
+ *
+ * Maintainer: Javier G. Monroy
+ * MAPIR group: https://mapir.isa.uma.es/
+ ******************************************************************************************** */
 
 #ifndef CrobotStatus_H
 #define CrobotStatus_H
 
 #include "rclcpp/rclcpp.hpp"
-// ros2 msgs
+ // ros2 msgs
 #include <diagnostic_msgs/msg/key_value.hpp>
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
@@ -26,18 +26,17 @@
 // json
 #include <mqtt_serialization/PoseJSON.hpp>
 
-
-class CrobotStatus: public rclcpp::Node
+class CrobotStatus : public rclcpp::Node
 {
 public:
     CrobotStatus();
-    ~CrobotStatus();    
+    ~CrobotStatus();
     void sendStatus();
 
     // Parameters
-    std::string output_topic;   // defaults to ros2mqtt
+    std::string output_topic; // defaults to ros2mqtt
     double statusRate;
-    
+
     std::string map_frame, base_frame;
     std::string tf_prefix;
     std::string battery_topic;
@@ -53,7 +52,7 @@ protected:
 
     // Publisher (status as JSON)
     rclcpp::Publisher<diagnostic_msgs::msg::KeyValue>::SharedPtr status_pub;
-    
+
     // Msgs To report
     geometry_msgs::msg::PoseWithCovarianceStamped current_pose;
     sensor_msgs::msg::BatteryState current_battery;

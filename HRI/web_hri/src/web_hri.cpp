@@ -13,35 +13,36 @@
 #include <string>
 #include <sstream>
 
-class CwebInterface: public rclcpp::Node
+class CwebInterface : public rclcpp::Node
 {
-    public:
-        CwebInterface(): Node("web_hri"){}
+public:
+    CwebInterface() : Node("web_hri") {}
 
-        ~CwebInterface(){
-            // close chrome?
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[web_hri] Closing Chrome");
-            system("wmctrl -c 'MAPIR HRI'");
-        }
+    ~CwebInterface()
+    {
+        // close chrome?
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[web_hri] Closing Chrome");
+        system("wmctrl -c 'MAPIR HRI'");
+    }
 
-        void launchScript()
-        {
-            // launch the chrome extension from terminal (no need to manually open Chrome)
-            // The Chrome extension implements a MQTT client, reproducing all incoming msg on a specific topic
-            // see extension configuration parameters
+    void launchScript()
+    {
+        // launch the chrome extension from terminal (no need to manually open Chrome)
+        // The Chrome extension implements a MQTT client, reproducing all incoming msg on a specific topic
+        // see extension configuration parameters
 
-            // may throw ament_index_cpp::PackageNotFoundError exception
-            std::string package_share_directory = ament_index_cpp::get_package_share_directory("web_hri");
+        // may throw ament_index_cpp::PackageNotFoundError exception
+        std::string package_share_directory = ament_index_cpp::get_package_share_directory("web_hri");
 
-            std::ostringstream s;
-            s << "/opt/google/chrome/google-chrome --new-window " << package_share_directory.c_str() << "/web/web_hri.html &";
-            system( s.str().c_str() );
+        std::ostringstream s;
+        s << "/opt/google/chrome/google-chrome --new-window " << package_share_directory.c_str() << "/web/web_hri.html &";
+        system(s.str().c_str());
 
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[webHRI] Opening Chrome Extension with command: %s", s.str().c_str() );
-        }
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[webHRI] Opening Chrome Extension with command: %s", s.str().c_str());
+    }
 
-    private:
-        std::string script_id;
+private:
+    std::string script_id;
 };
 
 // Simpe executor to automatically load the Chrome Extension on ROS2 startup
@@ -52,7 +53,7 @@ int main(int argc, char** argv)
 
     // create object
     std::shared_ptr<CwebInterface> hri = std::make_shared<CwebInterface>();
-    
+
     // Launchthe Chrome Extension
     hri->launchScript();
     rclcpp::spin(hri);

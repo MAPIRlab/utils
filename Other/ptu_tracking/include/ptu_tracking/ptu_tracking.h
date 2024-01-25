@@ -1,19 +1,19 @@
 /** ****************************************************************************************
-*  Tracking of Aruco tag with a pan-tilt unit
-*
-* Maintainer: Javier G. Monroy
-* MAPIR group: https://mapir.isa.uma.es/
-******************************************************************************************** */
+ *  Tracking of Aruco tag with a pan-tilt unit
+ *
+ * Maintainer: Javier G. Monroy
+ * MAPIR group: https://mapir.isa.uma.es/
+ ******************************************************************************************** */
 
 #ifndef CrobotStatus_H
 #define CrobotStatus_H
 
 #include "rclcpp/rclcpp.hpp"
-// ptu d46
-//#include "ptu_interfaces/srv/set_pan_tilt.hpp"
-//#include "ptu_interfaces/srv/set_pan_tilt_speed.hpp"
-//#include "ptu_interfaces/msg/ptu.hpp"
-// ptu interbotix wxxms
+ // ptu d46
+ // #include "ptu_interfaces/srv/set_pan_tilt.hpp"
+ // #include "ptu_interfaces/srv/set_pan_tilt_speed.hpp"
+ // #include "ptu_interfaces/msg/ptu.hpp"
+ // ptu interbotix wxxms
 #include "interbotix_xs_msgs/msg/joint_group_command.hpp"
 
 #include "tf2_ros/transform_broadcaster.h"
@@ -27,19 +27,18 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
-
-class CptuTrack: public rclcpp::Node
+class CptuTrack : public rclcpp::Node
 {
 public:
     CptuTrack();
-    ~CptuTrack();    
+    ~CptuTrack();
     void track();
 
     // Parameters
     std::string tag_frame, ptu_frame, camera_frame;
     std::string ptu_state_topic;
     double loopRate;
-    
+
     // TF2
     std::unique_ptr<tf2_ros::Buffer> tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     std::shared_ptr<tf2_ros::TransformListener> listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
@@ -54,10 +53,9 @@ public:
     // PTU intebotix
     rclcpp::Publisher<interbotix_xs_msgs::msg::JointGroupCommand>::SharedPtr ptu_interbotix_pub;
 
-
 protected:
-    //ptu_interfaces::msg::PTU current_ptu_state;
-    //void ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_state);
+    // ptu_interfaces::msg::PTU current_ptu_state;
+    // void ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_state);
     bool initialized;
     bool ptu_d46;
     double current_ptu_pan, current_ptu_tilt;
