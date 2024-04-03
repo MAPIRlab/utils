@@ -56,7 +56,19 @@ public:
         arguments.push_back("&");
         arguments.push_back(nullptr); // signal end of argument list
 
-        execv((coppelia_dir + "/coppeliaSim.sh").c_str(), ((char**)arguments.data()));
+        //Log the command for debugging purposes
+        std::string command = coppelia_dir + "coppeliaSim.sh";
+        for(const char* arg : arguments)
+        {
+            if(arg == nullptr)
+                continue;
+            command+= " ";
+            command+= arg;
+        }
+        RCLCPP_WARN(get_logger(), "Running coppelia with command:\n\t%s", command.c_str());
+
+
+        execv((coppelia_dir + "coppeliaSim.sh").c_str(), ((char**)arguments.data()));
     }
 
     ~CoppeliaSim()
