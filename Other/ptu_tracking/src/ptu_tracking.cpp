@@ -64,15 +64,15 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
 
     // check movement
     RCLCPP_INFO(this->get_logger(), "checking PTU conectivity....");
-    sleep(5.0);
-    ptu_send_pan_tilt(0.5, 0.2);
-    sleep(3.0);
-    ptu_send_pan_tilt(-0.5, -0.2);
-    sleep(3.0);
+    sleep(2.0);
+    ptu_send_pan_tilt(-0.1, 0.0);
+    sleep(0.5);
+    ptu_send_pan_tilt(0.1, 0.);
+    sleep(0.5);
     ptu_send_pan_tilt(0.0, 0.0);
     current_ptu_pan = 0.0;
     current_ptu_tilt = 0.0;
-    sleep(3.0);
+    sleep(0.5);
 
     initialized = true;
     RCLCPP_INFO(this->get_logger(), "Ready for Tracking....");
@@ -130,7 +130,7 @@ void CptuTrack::track()
         return;
     }
 
-    bool one_step = true;
+    bool one_step = false;
 
     if (one_step)
     {
@@ -176,7 +176,8 @@ void CptuTrack::track()
         geometry_msgs::msg::TransformStamped transform_tag;
         try
         {
-            transform_tag = tf_buffer->lookupTransform(camera_frame, tag_frame, tf2::TimePointZero, 20ms);
+            transform_tag = tf_buffer->lookupTransform(ptu_frame, tag_frame, tf2::TimePointZero, 20ms);
+            //transform_tag = tf_buffer->lookupTransform(camera_frame, tag_frame, tf2::TimePointZero, 20ms);
         }
         catch (tf2::TransformException& ex)
         {
@@ -184,27 +185,32 @@ void CptuTrack::track()
             RCLCPP_WARN(this->get_logger(), "TAG not in camera FOV");
             return;
         }
-
+        
         // 2. Align to center of image
         double tag_x = transform_tag.transform.translation.x;
         double tag_y = transform_tag.transform.translation.y;
+        double tag_z = transform_tag.transform.translation.z;
         double cmd_pan, cmd_tilt;
 
+        RCLCPP_INFO(this->get_logger(), "TAG DETECTED x[%.2f], y[%.2f], z[%.2f]", tag_x, tag_y, tag_z);
+        
+
         // pan
-        double precission = 0.03;
-        double step_rad = 0.01;
-        if (tag_x > precission)
-            current_ptu_pan -= step_rad; // rad (0.57deg)
-        else if (tag_x < -precission)
-            current_ptu_pan += step_rad; // rad
+        double precission = 0.05;   // m
+        double step_rad = 0.01;     // rad
+        if (tag_y > precission)
+            current_ptu_pan += step_rad; // rad (0.57deg)
+        else if (tag_y < -precission)
+            current_ptu_pan -= step_rad; // rad
 
         // tilt
-        if (tag_y < -precission)
+        if (tag_z > precission)
             current_ptu_tilt -= step_rad; // rad
-        else if (tag_y > precission)
+        else if (tag_z < -precission)
             current_ptu_tilt += step_rad; // rad
 
         // set goal pan in one step
+        //RCLCPP_INFO(this->get_logger(), "Requesting pan[%.2f] & tilt[%.2f]", current_ptu_pan, current_ptu_tilt);
         ptu_send_pan_tilt(current_ptu_pan, current_ptu_tilt);
     }
 }
