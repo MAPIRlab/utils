@@ -47,14 +47,15 @@ class RosbagViewer(tk.Frame):
 
 
     def process_gps(self):
-        # create a rosbag reader instance and open it for reading
-        topic_gps = "/hunter/fix"
         # variables
-        gps_interval = 1
+        gps_interval = 2
         cont_gps = 0
-        
+        topic_gps = "/hunter/fix"
+        self.map_widget.delete_all_marker()
+        self.markers.clear()
+
         with AnyReader([Path(self.bag_path)]) as reader:
-            # Filter by Topic
+            # Filter by Topic            
             my_connections = [x for x in reader.connections if operator.contains([topic_gps], x.topic)]
             #total = my_connections[0].msgcount
             #print(f"Found {total} GPS messages")
@@ -129,8 +130,8 @@ class RosbagViewer(tk.Frame):
 
 
     def select_bag(self):
-        # self.bag_path = filedialog.askdirectory()
-        self.bag_path = '/home/jgmonroy/rosbag2_2024_02_20-13_02_11'                
+        self.bag_path = filedialog.askdirectory()
+        #self.bag_path = '/home/jgmonroy/rosbag2_2024_02_20-13_02_11'                
         if self.bag_path:
             self.file_label.config(text="Selected file: " + self.bag_path)
             # Display bag info
@@ -165,7 +166,7 @@ class RosbagViewer(tk.Frame):
         self.rosbag_info_label.pack(side=tk.LEFT)
 
         # Map viewer
-        self.map_widget = tkintermapview.TkinterMapView(window, width=640, height=480, corner_radius=1)
+        self.map_widget = tkintermapview.TkinterMapView(window, width=800, height=600, corner_radius=1)
         # tile sever:
         #self.map_widget.set_tile_server("https://a.tile.openstreetmap.org/{z}/{x}/{y}.png")  # OpenStreetMap (default)
         #self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)  # google normal
