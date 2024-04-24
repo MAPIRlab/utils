@@ -57,8 +57,9 @@ class RosbagViewer(tk.Frame):
         with AnyReader([Path(self.bag_path)]) as reader:
             # Filter by Topic            
             my_connections = [x for x in reader.connections if operator.contains([topic_gps], x.topic)]
-            #total = my_connections[0].msgcount
-            #print(f"Found {total} GPS messages")
+            for con in my_connections:
+                total = con.msgcount
+                print(f"Found {total} GPS messages")
    
             for connection, timestamp, rawdata in reader.messages(connections=my_connections):
                 # deserialize data
@@ -69,11 +70,15 @@ class RosbagViewer(tk.Frame):
                     cont_gps = 0
                     gps = msg
                     self.markers.append([gps.latitude, gps.longitude])
-                    #self.map_widget.set_marker(gps.latitude, gps.longitude, marker_color_circle="black", marker_color_outside="gray40")
-                    #self.map_widget.set_path(self.markers)
-                    # center map
-                    #self.map_widget.set_position(gps.latitude, gps.longitude)
-                    #self.markers.append(m)
+                    
+                    """ Missing topic on metadata.yaml after reindex
+                    - topic_metadata:
+                      name: /hunter/heading
+                      type: geometry_msgs/msg/QuaternionStamped
+                      serialization_format: cdr
+                      offered_qos_profiles: "- history: 3\n  depth: 0\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+                      message_count: 0
+                    """
                 
                 """
                 if (connection.msgtype=='sensor_msgs/msg/Image') and connection.topic==topic_camera1 and cont_image>image_interval:
@@ -136,6 +141,9 @@ class RosbagViewer(tk.Frame):
             self.file_label.config(text="Selected file: " + self.bag_path)
             # Display bag info
             self.process_info()
+
+            # Draw GPS path
+            self.update_graph()
         else:
             self.file_label.config(text="No file selected.")
 
