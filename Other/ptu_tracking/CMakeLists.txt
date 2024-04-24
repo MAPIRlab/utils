@@ -14,6 +14,7 @@ find_package(diagnostic_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(apriltag_msgs)
 
 # ptu d46
 #find_package(ptu_interfaces REQUIRED)
@@ -32,7 +33,8 @@ include_directories(
 add_executable(ptu_tracking src/ptu_tracking.cpp)
 ament_target_dependencies(ptu_tracking 
   rclcpp
-  #ptu_interfaces 
+  #ptu_interfaces
+  apriltag_msgs 
   geometry_msgs 
   sensor_msgs 
   diagnostic_msgs 
