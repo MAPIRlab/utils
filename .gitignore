@@ -7,7 +7,7 @@
 .idea
 
 # VisualCode config
-.vscode/*
+*.vscode/*
 
 # colcon/CMake output
 build
