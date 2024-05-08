@@ -1,0 +1,5 @@
+builtin_interfaces/Time stamp
+string marker_type
+uint16 id
+geometry_msgs/TransformStamped transform
+geometry_msgs/Point camera_space_point

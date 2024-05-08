@@ -10,12 +10,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(image_marker_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
-
 
 
 include_directories(findAruco include)
@@ -24,6 +24,7 @@ ament_target_dependencies( findAruco
     rclcpp
     OpenCV 
     sensor_msgs
+    image_marker_msgs
     message_filters
     tf2_ros
     tf2_geometry_msgs

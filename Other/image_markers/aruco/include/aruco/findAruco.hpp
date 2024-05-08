@@ -10,6 +10,7 @@
 
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <image_marker_msgs/msg/marker_detection.hpp>
 
 #include <opencv2/core.hpp>
 
@@ -30,7 +31,7 @@ private:
     using Synchronizer = message_filters::Synchronizer<SyncPolicy>;
     std::shared_ptr<Synchronizer> sync_;
 
-    //TODO imagePoint rclcpp::Publisher<>
+    rclcpp::Publisher<image_marker_msgs::msg::MarkerDetection>::SharedPtr detectionsPub;
     std::shared_ptr<tf2_ros::TransformBroadcaster> transformBroadcaster;
 
     void imageCallback(const Image::ConstSharedPtr image, const CameraInfo::ConstSharedPtr cameraInfo);
