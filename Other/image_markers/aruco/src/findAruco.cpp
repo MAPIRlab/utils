@@ -32,19 +32,15 @@ ArucoNode::ArucoNode(std::string name) : rclcpp::Node(name)
 void ArucoNode::imageCallback(const Image::ConstSharedPtr image, const CameraInfo::ConstSharedPtr cameraInfo)
 {
     cv_bridge::CvImageConstPtr cvBridgeImage = cv_bridge::toCvShare(image);
-    cv::Size s = cvBridgeImage->image.size();
-    cv::Mat rectified(s, cvBridgeImage->image.type());
 
     // I guess you just have to know that "k" is the camera matrix and "d" is the dist coefficients
     // great naming, guys
     cv::Mat cameraMatrix(cameraInfo->k, CV_64F);
     cameraMatrix = cameraMatrix.reshape(1, 3);
-
-    cv::undistort(cvBridgeImage->image, rectified, cameraMatrix, cameraInfo->d);
-    detectArucoAndPublish(rectified, cameraMatrix, cameraInfo->header);
+    detectArucoAndPublish(cvBridgeImage->image, cameraMatrix, cameraInfo->d, cameraInfo->header);
 }
 
-void ArucoNode::detectArucoAndPublish(const cv::Mat& rectifiedImage, const cv::Mat& cameraMatrix, const std_msgs::msg::Header& image_header)
+void ArucoNode::detectArucoAndPublish(const cv::Mat& image, const cv::Mat& cameraMatrix, const std::vector<double>& distCoeffs, const std_msgs::msg::Header& image_header)
 {
     static cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
     static cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
@@ -52,21 +48,20 @@ void ArucoNode::detectArucoAndPublish(const cv::Mat& rectifiedImage, const cv::M
     // get the marker corners in image space
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-    cv::aruco::detectMarkers(rectifiedImage, dictionary, markerCorners, markerIds, detectorParams, rejectedCandidates);
+    cv::aruco::detectMarkers(image, dictionary, markerCorners, markerIds, detectorParams, rejectedCandidates);
 
     if (markerCorners.empty())
         return;
 
     // now, let's get the poses from the corners and the camera matrix
 
-    std::array<float, 5> nullDistortion = {0, 0, 0, 0, 0}; // image is already rectified
     std::vector<cv::Vec3d> rotations, translations;
-    cv::aruco::estimatePoseSingleMarkers(markerCorners, markerLength, cameraMatrix, nullDistortion, rotations, translations);
+    cv::aruco::estimatePoseSingleMarkers(markerCorners, markerLength, cameraMatrix, distCoeffs, rotations, translations);
 
     // re-project the centers to image space
     std::vector<cv::Point2d> imagePoints;
     // no translation or rotation, since the points are already relative to the camera's reference system
-    cv::projectPoints(translations, std::array<float, 3>{0, 0, 0}, std::array<float, 3>{0, 0, 0}, cameraMatrix, nullDistortion, imagePoints);
+    cv::projectPoints(translations, std::array<float, 3>{0, 0, 0}, std::array<float, 3>{0, 0, 0}, cameraMatrix, distCoeffs, imagePoints);
 
     for (int i = 0; i < translations.size(); i++)
     {
