@@ -10,34 +10,27 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(diagnostic_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(apriltag_msgs)
-
-# ptu d46
-#find_package(ptu_interfaces REQUIRED)
+find_package(image_marker_msgs)
 # ptu interbotix
 find_package(interbotix_xs_msgs)
-
 find_package(Boost REQUIRED COMPONENTS system)
+
 
 include_directories(include)
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
 
 add_executable(ptu_tracking src/ptu_tracking.cpp)
 ament_target_dependencies(ptu_tracking 
   rclcpp
-  #ptu_interfaces
-  apriltag_msgs 
+  image_marker_msgs
   geometry_msgs 
-  sensor_msgs 
-  diagnostic_msgs 
+  sensor_msgs   
   tf2_ros 
   tf2 
   std_msgs

@@ -21,7 +21,7 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include <std_msgs/msg/string.hpp>
-#include <apriltag_msgs/msg/april_tag_detection_array.hpp>
+#include <image_marker_msgs/msg/marker_detection.hpp>
 // boost
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -48,20 +48,17 @@ public:
     // PTU intebotix
     rclcpp::Publisher<interbotix_xs_msgs::msg::JointGroupCommand>::SharedPtr ptu_interbotix_pub;
 
-    // AprilTags
-    rclcpp::Subscription<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr apriltag_sub;
+    // Aruco Detections (see image_marker_msgs)
+    rclcpp::Subscription<image_marker_msgs::msg::MarkerDetection>::SharedPtr aruco_sub;
 
 protected:
-    // ptu_interfaces::msg::PTU current_ptu_state;
-    // void ptuStateCallBack(const ptu_interfaces::msg::PTU::SharedPtr new_state);
-    bool initialized;    
-    bool ptu_d46;
+    bool initialized;
     double current_ptu_pan, current_ptu_tilt;
 
     void do_tf_based_tracking();
     void do_image_based_tracking(float tag_x, float tag_y);
     void ptu_send_pan_tilt(float pan, float tilt);
-    void detected_tag_cb(apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr msg);
+    void detected_tag_cb(image_marker_msgs::msg::MarkerDetection::SharedPtr msg);
 };
 
 #endif
