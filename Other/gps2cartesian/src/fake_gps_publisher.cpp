@@ -27,7 +27,7 @@ class MinimalPublisher : public rclcpp::Node
 
         // Set timer
         timer_ = this->create_wall_timer(
-        500ms, std::bind(&MinimalPublisher::timer_callback, this));
+        100ms, std::bind(&MinimalPublisher::timer_callback, this));
     }
 
   private:
