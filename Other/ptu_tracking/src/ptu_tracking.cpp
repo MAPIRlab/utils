@@ -28,7 +28,7 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     tag_frame = this->declare_parameter<std::string>("tag_frame_id", "landmark_link");
     ptu_frame = this->declare_parameter<std::string>("ptu_frame_id", "ptu_link");
 
-    tag_detection_topic = this->declare_parameter<std::string>("tag_detection_topic", "apriltag/detections");
+    tag_detection_topic = this->declare_parameter<std::string>("tag_detection_topic", "aruco/detections");
     image_size_x = this->declare_parameter<int>("image_size_x", 1920);
     image_size_y = this->declare_parameter<int>("image_size_y", 1080);
     kp = this->declare_parameter<float>("kp", 1);
@@ -41,7 +41,7 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     ptu_interbotix_pub = this->create_publisher<interbotix_xs_msgs::msg::JointGroupCommand>("commands/joint_group", 1);
 
     // Subscriber?
-    apriltag_sub = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>(tag_detection_topic,1,std::bind(&CptuTrack::detected_tag_cb,this, _1) );
+    aruco_sub = this->create_subscription<image_marker_msgs::msg::MarkerDetection>(tag_detection_topic,1,std::bind(&CptuTrack::detected_tag_cb,this, _1) );
     
     // PID controller
     pid_controller = std::make_shared<PID>(this->get_clock(), kp, ki, kd);
@@ -75,7 +75,7 @@ CptuTrack::~CptuTrack()
 }
 
 
-void CptuTrack::detected_tag_cb(apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr msg)
+void CptuTrack::detected_tag_cb(image_marker_msgs::msg::MarkerDetection::SharedPtr msg)
 {
     // The tag has been detected -> Track
     if (!initialized)
@@ -93,13 +93,10 @@ void CptuTrack::detected_tag_cb(apriltag_msgs::msg::AprilTagDetectionArray::Shar
     else
     {
         // Detection is given in image frame (px)
-        if ( msg->detections.size() > 0)
-        {
-            float tag_x = msg->detections[0].centre.x;
-            float tag_y = msg->detections[0].centre.y;
-            RCLCPP_INFO(this->get_logger(), "Tag Detected --> tracking on IMG X[%.2f] Y[%.2f]",tag_x,tag_y);
-            do_image_based_tracking(tag_x,tag_y);
-        }
+        float tag_x = msg->camera_space_point.x;
+        float tag_y = msg->camera_space_point.y;
+        RCLCPP_INFO(this->get_logger(), "Tag Detected --> tracking on IMG X[%.2f] Y[%.2f]",tag_x,tag_y);
+        do_image_based_tracking(tag_x,tag_y);   
     }
 }
 

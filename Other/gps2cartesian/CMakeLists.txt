@@ -41,9 +41,17 @@ ament_target_dependencies(gps2cartesian
   tf2_ros
 )
 
+add_executable(fakeGPSpub src/fake_gps_publisher.cpp)
+ament_target_dependencies(fakeGPSpub 
+  rclcpp
+  sensor_msgs
+  std_msgs
+)
+
 # Declare and install executables
 install(TARGETS
   gps2cartesian
+  fakeGPSpub
   DESTINATION lib/${PROJECT_NAME}
 )
 
