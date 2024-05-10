@@ -35,5 +35,5 @@ private:
     std::shared_ptr<tf2_ros::TransformBroadcaster> transformBroadcaster;
 
     void imageCallback(const Image::ConstSharedPtr image, const CameraInfo::ConstSharedPtr cameraInfo);
-    void detectArucoAndPublish(const cv::Mat& rectifiedImage, const cv::Mat& cameraMatrix, const std_msgs::msg::Header& image_header);
+    void detectArucoAndPublish(const cv::Mat& image, const cv::Mat& cameraMatrix, const std::vector<double>& distCoeffs, const std_msgs::msg::Header& image_header);
 };
