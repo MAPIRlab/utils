@@ -34,6 +34,7 @@ public:
 
     // Parameters
     int image_size_x, image_size_y;
+    int goal_marker_x, goal_marker_y;
     std::string tag_frame, ptu_frame, tag_detection_topic;
     float kp,ki,kd;
     bool tf_based_tracking;
