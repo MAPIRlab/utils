@@ -31,6 +31,8 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     tag_detection_topic = this->declare_parameter<std::string>("tag_detection_topic", "aruco/detections");
     image_size_x = this->declare_parameter<int>("image_size_x", 1920);
     image_size_y = this->declare_parameter<int>("image_size_y", 1080);
+    goal_marker_x = this->declare_parameter<int>("goal_marker_x", image_size_x/2);
+    goal_marker_y = this->declare_parameter<int>("goal_marker_y", image_size_y/2);
     kp = this->declare_parameter<float>("kp", 1);
     ki = this->declare_parameter<float>("ki", 1);
     kd = this->declare_parameter<float>("kd", 1);
@@ -121,9 +123,9 @@ void CptuTrack::do_image_based_tracking(float tag_x, float tag_y)
 
     float precission_px = 5.0;   // px
     float step_rad = 0.001;       // rad
-    float error_x = tag_x - float(image_size_x)/2;
-    float error_y = tag_y - float(image_size_y)/2;
-    RCLCPP_INFO(this->get_logger(), "TAG distance (px) with respect ImgCenter X[%.2f] Y[%.2f]", error_x, error_y);
+    float error_x = tag_x - goal_marker_x;
+    float error_y = tag_y - goal_marker_y;
+    RCLCPP_INFO(this->get_logger(), "TAG distance (error in px) with respect Goal: X[%.2f] Y[%.2f]", error_x, error_y);
 
     
     // pan
