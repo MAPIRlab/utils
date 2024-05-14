@@ -5,7 +5,7 @@
 
 namespace mqtt_serialization
 {
-    static nlohmann::json pose_to_json(const geometry_msgs::msg::PoseStamped& pose)
+    inline nlohmann::json pose_to_json(const geometry_msgs::msg::PoseStamped& pose)
     {
         nlohmann::json json;
 
@@ -26,7 +26,7 @@ namespace mqtt_serialization
         return json;
     }
 
-    static geometry_msgs::msg::PoseStamped pose_from_json(const nlohmann::json& json)
+    inline geometry_msgs::msg::PoseStamped pose_from_json(const nlohmann::json& json)
     {
         geometry_msgs::msg::PoseStamped pose;
         try

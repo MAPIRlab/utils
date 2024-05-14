@@ -1,0 +1,1 @@
+# Realtime visualization of a NavSatFix topic with a Qt application

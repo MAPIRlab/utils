@@ -28,7 +28,7 @@ public:
         mqttPub = create_publisher<KeyValue>("/ros2mqtt", 1);
 
         receive_goal_topic_mqtt = declare_parameter<std::string>("receive_goal_topic_mqtt", "NavToPose");
-        receive_goal_topic_mqtt = applyNamespaceIfNeeded(receive_goal_topic_mqtt);
+        receive_goal_topic_mqtt = mqtt_serialization::Utils::applyNamespaceIfNeeded(receive_goal_topic_mqtt, shared_from_this());
         spdlog::info("Receive goal topic: {}", receive_goal_topic_mqtt);
         send_result_topic_mqtt = declare_parameter<std::string>("send_result_topic_mqtt", "NavigationResult");
         spdlog::info("Send result topic: {}", send_result_topic_mqtt);
@@ -75,20 +75,6 @@ public:
         mqttPub->publish(msg);
     }
 
-    std::string applyNamespaceIfNeeded(std::string& topicName)
-    {
-        if (topicName.at(0) != '/')
-        {
-            std::string _namespace = get_namespace();
-
-            // handle the empty namespace
-            if (_namespace == "/")
-                _namespace = "";
-
-            return fmt::format("{}/{}", _namespace, topicName);
-        }
-        return topicName;
-    }
 };
 
 int main(int argc, char** argv)

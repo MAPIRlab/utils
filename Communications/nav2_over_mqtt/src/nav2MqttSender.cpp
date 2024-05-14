@@ -33,7 +33,7 @@ public:
 
         goalTopic = declare_parameter<std::string>("goalTopic", "NavToPose");
         resultTopic = declare_parameter<std::string>("resultTopic", "NavigationResult");
-        resultTopic = applyNamespaceIfNeeded(resultTopic);
+        resultTopic = mqtt_serialization::Utils::applyNamespaceIfNeeded(resultTopic, shared_from_this());
         spdlog::info("Send result topic: {}", resultTopic);
     }
 
@@ -91,21 +91,6 @@ public:
                 m_activeGoalHandle->abort(result);
             }
         }
-    }
-
-    std::string applyNamespaceIfNeeded(std::string& topicName)
-    {
-        if (topicName.at(0) != '/')
-        {
-            std::string _namespace = get_namespace();
-
-            // handle the empty namespace
-            if (_namespace == "/")
-                _namespace = "";
-
-            return fmt::format("{}/{}", _namespace, topicName);
-        }
-        return topicName;
     }
 };
 
