@@ -1,24 +1,10 @@
 #pragma once
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include "Utils.hpp"
 #include "json.hpp"
 
 namespace mqtt_serialization
 {
-    namespace Utils
-    {
-        static double getYaw(const geometry_msgs::msg::Quaternion& quat)
-        {
-            tf2::Quaternion tfquat;
-            tf2::fromMsg(quat, tfquat);
-
-            tf2::Matrix3x3 m(tfquat);
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
-            return yaw;
-        }
-    }
-
     static nlohmann::json pose_to_json(const geometry_msgs::msg::PoseStamped& pose)
     {
         nlohmann::json json;

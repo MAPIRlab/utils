@@ -37,6 +37,10 @@ ament_target_dependencies(nav2MqttSender
 ${AMENT_DEPS})
 target_link_libraries(nav2MqttSender spdlog::spdlog) 
 
+#Tf synchronizer
+add_executable(tfsync src/mqttTFSync.cpp)
+ament_target_dependencies(tfsync
+${AMENT_DEPS})
 
 #test node
 add_executable(testNode src/testNode.cpp)
@@ -45,7 +49,7 @@ ${AMENT_DEPS}
 ) 
 
 install(
-  TARGETS mqtt2Nav2 nav2MqttSender testNode
+  TARGETS mqtt2Nav2 nav2MqttSender tfsync testNode
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()
