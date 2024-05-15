@@ -10,6 +10,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS
     Core
     Gui
@@ -32,6 +33,7 @@ add_executable(gps_viewer
 )
 ament_target_dependencies(gps_viewer
     rclcpp
+    sensor_msgs
 )
 target_link_libraries(gps_viewer
     QGeoView    

@@ -3,7 +3,8 @@ project(nav2_over_mqtt)
 
 ##################
 set(CMAKE_BUILD_TYPE "Release") 
-set(CMAKE_CXX_FLAGS "-std=c++17 -g -O2 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-std=c++17 -g -O2 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -g -O0 ${CMAKE_CXX_FLAGS}")
 
 
 

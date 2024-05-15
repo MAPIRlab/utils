@@ -11,19 +11,20 @@ class Sender : public rclcpp::Node
 {
 public:
     Sender() : Node("NavSatMQTTSender")
+    {}
+
+    void Initialize()
     {
         mqttPub = create_publisher<KeyValue>("/ros2mqtt", 5);
 
         std::string topic = declare_parameter<std::string>("topic", "fix");
         std::string completeTopicName = mqtt_serialization::Utils::applyNamespaceIfNeeded(topic, shared_from_this());
-        sub = create_subscription<NavSatFix>(topic, 5, 
-            [this, completeTopicName](NavSatFix::ConstSharedPtr gps) 
-            {
-                KeyValue keyValue;
-                keyValue.key = completeTopicName;
-                keyValue.value = mqtt_serialization::navSat_to_json(*gps);
-                mqttPub->publish(keyValue);
-            });
+        sub = create_subscription<NavSatFix>(topic, 5, [this, completeTopicName](NavSatFix::ConstSharedPtr gps) {
+            KeyValue keyValue;
+            keyValue.key = completeTopicName;
+            keyValue.value = mqtt_serialization::navSat_to_json(*gps).dump();
+            mqttPub->publish(keyValue);
+        });
     }
 
 private:
@@ -35,5 +36,6 @@ int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<Sender>();
+    node->Initialize();
     rclcpp::spin(node);
 }
