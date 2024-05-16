@@ -23,7 +23,7 @@ public:
 
     void on_connect(int rc)
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "MQTT Connected with code %u", rc);
+        RCLCPP_INFO(rclcpp::get_logger("MQTT_Bridge"), "MQTT Connected with code %u", rc);
         switch (rc)
         {
         case 0:
@@ -47,11 +47,11 @@ public:
                     completeTopic = tokenInList;
                 else
                     completeTopic = MQTT_namespace + "/" + tokenInList;
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Subscribing to %s", completeTopic.c_str());
+                RCLCPP_INFO(rclcpp::get_logger("MQTT_Bridge"), "Subscribing to %s", completeTopic.c_str());
 
                 int rc = subscribe(NULL, completeTopic.c_str(), 0);
                 if (rc)
-                    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Error: failed to subscribe to %s/# with error code %u", MQTT_namespace.c_str(), rc);
+                    RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Error: failed to subscribe to %s/# with error code %u", MQTT_namespace.c_str(), rc);
 
                 if (pos == -1)
                 {
@@ -78,22 +78,22 @@ public:
             break;
         }
         case 1:
-            std::cerr << "[mqtt_bridge] Connection Refused: unacceptable protocol version\n";
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection Refused: unacceptable protocol version");
             break;
         case 2:
-            std::cerr << "[mqtt_bridge] Connection Refused: identifier rejected\n";
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection Refused: identifier rejected");
             break;
         case 3:
-            std::cerr << "[mqtt_bridge] Connection Refused: broker unavailable\n";
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection Refused: broker unavailable");
             break;
         case 4:
-            std::cerr << "[mqtt_bridge] Connection Refused: bad user name or password\n";
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection Refused: bad user name or password");
             break;
         case 5:
-            std::cerr << "[mqtt_bridge] Connection Refused: not authorised\n";
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection Refused: not authorised");
             break;
         default:
-            std::cerr << "[mqtt_bridge] Connection Refused: unknown reason\n";
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection Refused: unknown reason");
             break;
         }
     };
@@ -103,14 +103,14 @@ public:
         //------------------------------
         if (rc != MOSQ_ERR_SUCCESS)
         {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Connection lost with MQTT broker, error code: %u. Reconnecting...", rc);
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Connection lost with MQTT broker, error code: %u. Reconnecting...", rc);
             disconnect();
             mosqpp::lib_cleanup();
             mosqpp::lib_init();
             if (broker_username != "")
             {
                 if (username_pw_set(broker_username.c_str(), broker_password.c_str()))
-                    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Error setting username and password");
+                    RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Error setting username and password");
             }
             connect(broker_host.c_str(), broker_port, 30);
 
@@ -126,7 +126,7 @@ public:
         std::strcpy(cstr, (char*)message->payload);
         std::string msgLoad = string(cstr);
 
-        RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Received msg from MQTT: topic=%s   value=%s", msgTopic.c_str(), msgLoad.c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("MQTT_Bridge"), "Received msg from MQTT: topic=%s   value=%s", msgTopic.c_str(), msgLoad.c_str());
 
         // Publish msg on ROS Topic mqtt2ros
         diagnostic_msgs::msg::KeyValue msg;

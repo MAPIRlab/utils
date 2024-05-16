@@ -21,7 +21,7 @@ public:
             {
                 if(msg->key != topic)
                     return;
-                NavSatFix gps = mqtt_serialization::navSat_from_json(msg->value);
+                NavSatFix gps = mqtt_serialization::navSat_from_json(nlohmann::json::parse(msg->value));
                 pub->publish(gps);
             });
     }
