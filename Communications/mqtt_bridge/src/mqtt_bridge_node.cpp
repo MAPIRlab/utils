@@ -39,7 +39,7 @@ static std::unique_ptr<CMQTTMosquitto> MQTTconnector;
 void ros2mqtt_callback(const diagnostic_msgs::msg::KeyValue msg)
 {
 
-    RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "Sending msg to MQTT: topic=%s    value=:%s",
+    RCLCPP_DEBUG(rclcpp::get_logger("MQTT_Bridge"), "Sending msg to MQTT: topic=%s    value=:%s",
         msg.key.c_str(), msg.value.c_str());
 
     // hande absolute topic names ("/topic") vs namespace-relative ones ("topic")
@@ -58,14 +58,13 @@ void ros2mqtt_callback(const diagnostic_msgs::msg::KeyValue msg)
 // MAIN
 int main(int argc, char** argv)
 {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] ");
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("mqtt_bridge_node");
 
     // Init mosquittopp lib (providing an unique ID)
     char id[100];
     sprintf(id, "UMArobot_%f", rclcpp::Clock().now().seconds());
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Connecting to mosquittopp with ID: %s", id);
+    RCLCPP_INFO(rclcpp::get_logger("MQTT_Bridge"), "[mqtt_bridge] Connecting to mosquittopp with ID: %s", id);
 
     // MQTTconnector
     MQTTconnector = std::make_unique<CMQTTMosquitto>(id);
@@ -90,7 +89,7 @@ int main(int argc, char** argv)
     MQTTconnector->broker_password = node->declare_parameter<std::string>("password", "");
 
     MQTTconnector->MQTT_namespace = node->declare_parameter<std::string>("MQTT_namespace", "MAPIR_robot"); // To allow multiple robots.
-    if (MQTTconnector->MQTT_namespace.at(0) != '/')
+    if (MQTTconnector->MQTT_namespace.empty() || MQTTconnector->MQTT_namespace.at(0) != '/')
         MQTTconnector->MQTT_namespace = '/' + MQTTconnector->MQTT_namespace;
 
     MQTTconnector->MQTT_topics_subscribe = node->declare_parameter<std::string>("MQTT_topics_subscribe", "NavigationCommand,ClientACK,ServerACK");
@@ -99,12 +98,12 @@ int main(int argc, char** argv)
 
     // Connect to MQTTmosquitto broker
     //---------------------------------
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[mqtt_bridge] Initializing mqtt_bridge at %s:%u", MQTTconnector->broker_host.c_str(), MQTTconnector->broker_port);
+    RCLCPP_INFO(rclcpp::get_logger("MQTT_Bridge"), "[mqtt_bridge] Initializing mqtt_bridge at %s:%u", MQTTconnector->broker_host.c_str(), MQTTconnector->broker_port);
 
     if (MQTTconnector->broker_username != "")
     {
         if (MQTTconnector->username_pw_set(MQTTconnector->broker_username.c_str(), MQTTconnector->broker_password.c_str()))
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Error setting username and password");
+            RCLCPP_ERROR(rclcpp::get_logger("MQTT_Bridge"), "Error setting username and password");
     }
 
     // connect(username, pass, keepAlive(sec))
