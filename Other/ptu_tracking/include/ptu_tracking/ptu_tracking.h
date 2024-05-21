@@ -31,12 +31,14 @@ class CptuTrack : public rclcpp::Node
 public:
     CptuTrack();
     ~CptuTrack();
+    void do_tracking();
 
     // Parameters
     int image_size_x, image_size_y;
     int goal_marker_x, goal_marker_y;
     std::string tag_frame, ptu_frame, tag_detection_topic;
-    float kp,ki,kd;
+    float kp_p,ki_p,kd_p;
+    float kp_t,ki_t,kd_t;
     bool tf_based_tracking;
 
     // TF2
@@ -44,7 +46,8 @@ public:
     std::shared_ptr<tf2_ros::TransformListener> listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
     // PID controller
-    std::shared_ptr<PID> pid_controller;
+    std::shared_ptr<PID> pid_controller_pan;
+    std::shared_ptr<PID> pid_controller_tilt;
     
     // PTU intebotix
     rclcpp::Publisher<interbotix_xs_msgs::msg::JointGroupCommand>::SharedPtr ptu_interbotix_pub;
@@ -55,7 +58,10 @@ public:
 protected:
     bool initialized;
     double current_ptu_pan, current_ptu_tilt;
-
+    float last_detected_tag_x;
+    float last_detected_tag_y;
+    double previousTimestamp;
+    
     void do_tf_based_tracking();
     void do_image_based_tracking(float tag_x, float tag_y);
     void ptu_send_pan_tilt(float pan, float tilt);

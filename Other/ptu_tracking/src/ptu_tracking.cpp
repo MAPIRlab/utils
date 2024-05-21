@@ -33,9 +33,17 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     image_size_y = this->declare_parameter<int>("image_size_y", 1080);
     goal_marker_x = this->declare_parameter<int>("goal_marker_x", image_size_x/2);
     goal_marker_y = this->declare_parameter<int>("goal_marker_y", image_size_y/2);
-    kp = this->declare_parameter<float>("kp", 1);
-    ki = this->declare_parameter<float>("ki", 1);
-    kd = this->declare_parameter<float>("kd", 1);
+    // PID
+    kp_p = this->declare_parameter<float>("kp_p", 1);
+    ki_p = this->declare_parameter<float>("ki_p", 1);
+    kd_p = this->declare_parameter<float>("kd_p", 1);
+    int window_size_p = this->declare_parameter<int>("window_size_p", 10);
+
+
+    kp_t = this->declare_parameter<float>("kp_t", 1);
+    ki_t = this->declare_parameter<float>("ki_t", 1);
+    kd_t = this->declare_parameter<float>("kd_t", 1);
+    int window_size_t = this->declare_parameter<int>("window_size_t", 10);
 
     tf_based_tracking = this->declare_parameter<bool>("tf_based_tracking", true);
         
@@ -46,10 +54,13 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
     aruco_sub = this->create_subscription<image_marker_msgs::msg::MarkerDetection>(tag_detection_topic,1,std::bind(&CptuTrack::detected_tag_cb,this, _1) );
     
     // PID controller
-    pid_controller = std::make_shared<PID>(this->get_clock(), kp, ki, kd);
+    pid_controller_pan = std::make_shared<PID>(this->get_clock(), kp_p, ki_p, kd_p, window_size_p);
+    pid_controller_tilt = std::make_shared<PID>(this->get_clock(), kp_t, ki_t, kd_t, window_size_t);
+    
 
     // check PTU movement
     RCLCPP_INFO(this->get_logger(), "checking PTU conectivity....");
+    previousTimestamp = this->get_clock()->now().seconds();
     sleep(1.0);
     ptu_send_pan_tilt(-0.1, 0.0);
     sleep(0.5);
@@ -59,7 +70,7 @@ CptuTrack::CptuTrack() : Node("CptuTrack")
 
     // Set initial state
     current_ptu_pan = 0.0;
-    current_ptu_tilt = 0.0;
+    current_ptu_tilt = 0.0;    
     sleep(0.5);
 
     initialized = true;
@@ -75,6 +86,48 @@ CptuTrack::~CptuTrack()
     sleep(1.0);
     RCLCPP_INFO(this->get_logger(), "See you later, aligator!");
 }
+
+
+void CptuTrack::do_tracking()
+{
+    // Track the last seen marker (if not too old)
+    if (!initialized)
+    {
+        RCLCPP_WARN(this->get_logger(), "PTU state unknown... waiting");
+        return;
+    }
+
+    // Check we have fresh detections!
+    double time_diff = this->get_clock()->now().seconds() - previousTimestamp;
+    if ( time_diff > 0.5)
+    {
+        //RCLCPP_INFO(this->get_logger(), "Not recent marker detected... doing Nothing (time_diff=%f)!!",time_diff);
+        return;
+    }
+
+    // Select tracking method
+    if (tf_based_tracking)
+    {
+        RCLCPP_INFO(this->get_logger(), "tracking by TF");
+        do_tf_based_tracking();
+    }
+    else
+    {
+        //RCLCPP_INFO(this->get_logger(), "tracking on IMG");
+        // Detection is given in image frame (px)
+        do_image_based_tracking(last_detected_tag_x,last_detected_tag_y);   
+    }
+}
+/*
+void CptuTrack::detected_tag_cb(image_marker_msgs::msg::MarkerDetection::SharedPtr msg)
+{
+    // Update detection values
+    last_detected_tag_x = msg->camera_space_point.x;
+    last_detected_tag_y = msg->camera_space_point.y;
+    previousTimestamp = this->get_clock()->now().seconds();
+    //RCLCPP_INFO(this->get_logger(), "Tag Detected at X[%.2f] Y[%.2f]",last_detected_tag_x,last_detected_tag_y);
+}
+*/
 
 
 void CptuTrack::detected_tag_cb(image_marker_msgs::msg::MarkerDetection::SharedPtr msg)
@@ -97,7 +150,7 @@ void CptuTrack::detected_tag_cb(image_marker_msgs::msg::MarkerDetection::SharedP
         // Detection is given in image frame (px)
         float tag_x = msg->camera_space_point.x;
         float tag_y = msg->camera_space_point.y;
-        RCLCPP_INFO(this->get_logger(), "Tag Detected --> tracking on IMG X[%.2f] Y[%.2f]",tag_x,tag_y);
+        //RCLCPP_INFO(this->get_logger(), "Tag Detected --> tracking on IMG X[%.2f] Y[%.2f]",tag_x,tag_y);
         do_image_based_tracking(tag_x,tag_y);   
     }
 }
@@ -122,26 +175,37 @@ void CptuTrack::do_image_based_tracking(float tag_x, float tag_y)
     //RCLCPP_INFO(this->get_logger(), "IN");
 
     float precission_px = 5.0;   // px
-    float step_rad = 0.001;       // rad
-    float error_x = tag_x - goal_marker_x;
-    float error_y = tag_y - goal_marker_y;
-    RCLCPP_INFO(this->get_logger(), "TAG distance (error in px) with respect Goal: X[%.2f] Y[%.2f]", error_x, error_y);
+    float error_x = goal_marker_x - tag_x;
+    float error_y = goal_marker_y - tag_y;
+    //RCLCPP_INFO(this->get_logger(), "TAG distance (error in px) with respect Goal: X[%.2f] Y[%.2f]", error_x, error_y);
 
     
     // pan
     if (abs(error_y) > precission_px)
     {
-        float incr_rad = -pid_controller->DoUpdate(error_y*step_rad);
-        RCLCPP_INFO(this->get_logger(), "PAN increment [%.4f] rad", incr_rad);
+        float incr_rad = pid_controller_pan->DoUpdate(error_y * 0.0001);
+        //RCLCPP_INFO(this->get_logger(), "PAN increment [%.4f] rad", incr_rad);
         current_ptu_pan += incr_rad;
+
+        // Oscilation freq
+        auto sign = [](float f){return f>0?1:-1;};
+        static float previous = 0;
+        if(previous != 0)
+        {
+            if(sign(previous) != sign(incr_rad))
+                RCLCPP_WARN(get_logger(), "Changed directions at %f", now().seconds());
+        }
+        previous = incr_rad;
     }
     // tilt
     if (abs(error_x) > precission_px)
     {
-        float incr_rad = -pid_controller->DoUpdate(error_x*step_rad);
-        RCLCPP_INFO(this->get_logger(), "TILT increment [%.4f] rad", incr_rad);
+        float incr_rad = pid_controller_tilt->DoUpdate(error_x* 0.0001);
+        //RCLCPP_INFO(this->get_logger(), "TILT increment [%.4f] rad", incr_rad);
         current_ptu_tilt += incr_rad;
     }
+
+    
     // set goal pan in one step
     ptu_send_pan_tilt(current_ptu_pan, current_ptu_tilt);
 }
@@ -185,12 +249,12 @@ void CptuTrack::do_tf_based_tracking()
         // pan
         if (abs(tag_y) > precission)
         {
-            current_ptu_pan += kp*tag_y*step_rad;
+            current_ptu_pan += kp_p*tag_y*step_rad;
         }
         //tilt
         if (abs(tag_z) > precission)
         {
-            current_ptu_tilt -= kp*tag_z*step_rad;
+            current_ptu_tilt -= kp_p*tag_z*step_rad;
         }
         /*
         if (tag_y > precission)
@@ -221,7 +285,15 @@ int main(int argc, char** argv)
     // Main Loop
     //----------
     RCLCPP_INFO(node->get_logger(), "CptuTrack ready for operation...Looping");
+
     rclcpp::spin(node);
+    //rclcpp::Rate loop_rate(30.0);
+    //while (rclcpp::ok()) 
+    //{
+    //    rclcpp::spin_some(node);
+    //    node->do_tracking();
+    //    loop_rate.sleep();
+    //}
 
     return (0);
 }
