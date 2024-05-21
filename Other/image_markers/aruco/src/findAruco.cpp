@@ -31,6 +31,7 @@ ArucoNode::ArucoNode(std::string name) : rclcpp::Node(name)
 
 void ArucoNode::imageCallback(const Image::ConstSharedPtr image, const CameraInfo::ConstSharedPtr cameraInfo)
 {
+    RCLCPP_INFO(get_logger(), "Got a new image");
     cv_bridge::CvImageConstPtr cvBridgeImage = cv_bridge::toCvShare(image);
 
     // I guess you just have to know that "k" is the camera matrix and "d" is the dist coefficients
@@ -49,6 +50,8 @@ void ArucoNode::detectArucoAndPublish(const cv::Mat& image, const cv::Mat& camer
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::aruco::detectMarkers(image, dictionary, markerCorners, markerIds, detectorParams, rejectedCandidates);
+
+    RCLCPP_INFO(get_logger(), "Detected %lu markers in image", markerCorners.size());
 
     if (markerCorners.empty())
         return;
