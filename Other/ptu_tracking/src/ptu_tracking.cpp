@@ -272,7 +272,7 @@ void CptuTrack::do_tf_based_tracking()
         ptu_send_pan_tilt(current_ptu_pan, current_ptu_tilt);
     }
 }
-
+#define USE_GUI 1
 #if USE_GUI
     #include <ptu_tracking/PID_GUI.h>
     #include <thread>
@@ -287,6 +287,10 @@ void CptuTrack::do_tf_based_tracking()
             AMENT_IMGUI::StartFrame();
             RenderPIDGUI(*pid_controller_pan, "Pan");
             RenderPIDGUI(*pid_controller_tilt, "Tilt");
+            ImGui::Begin("Goal pixels");
+            ImGui::InputInt("goal_marker_x", &goal_marker_x);
+            ImGui::InputInt("goal_marker_y", &goal_marker_y);
+            ImGui::End();
             AMENT_IMGUI::Render();
         }
         AMENT_IMGUI::close();
