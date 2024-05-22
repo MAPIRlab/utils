@@ -6,7 +6,7 @@ class PID
 {
 public:
     PID() = delete;
-    PID(rclcpp::Clock::SharedPtr _clock, float p, float i, float d, int _window_size) : kP(p), kI(i), kD(d), clock(_clock), window_size(_window_size)
+    PID(rclcpp::Clock::SharedPtr _clock, float p, float i, float d, uint _window_size) : kP(p), kI(i), kD(d), clock(_clock), window_size(_window_size)
     {
         reset(0);
     }
@@ -46,7 +46,7 @@ private:
     float previousError;
     rclcpp::Time previousTimestamp;
     std::deque<float> window;
-    int window_size;
+    uint window_size;
 
     void setPrevious(float val)
     {

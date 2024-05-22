@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(ptu_tracking)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+
+set(USE_GUI ON)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -18,6 +17,11 @@ find_package(image_marker_msgs)
 find_package(interbotix_xs_msgs)
 find_package(Boost REQUIRED COMPONENTS system)
 
+if(USE_GUI)
+find_package(ament_imgui)
+set(CONDITIONAL_IMGUI "ament_imgui") 
+add_compile_definitions("USE_GUI=1")
+endif()
 
 include_directories(include)
 
@@ -35,11 +39,15 @@ ament_target_dependencies(ptu_tracking
   tf2 
   std_msgs
   interbotix_xs_msgs
-  Boost)
+  Boost
+  ${CONDITIONAL_IMGUI} #if USE_GUI==OFF, the variable is empty
+)
 
 target_link_libraries(ptu_tracking
    ${Boost_LIBRARIES}
 )
+
+set_property(TARGET ptu_tracking PROPERTY CXX_STANDARD 20)
 
 install(TARGETS
   ptu_tracking
@@ -48,6 +56,11 @@ install(TARGETS
 
 install(
   DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+
+install(
+  DIRECTORY resources
   DESTINATION share/${PROJECT_NAME}/
 )
 

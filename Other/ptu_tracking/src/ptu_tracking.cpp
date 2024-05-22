@@ -273,6 +273,25 @@ void CptuTrack::do_tf_based_tracking()
     }
 }
 
+#if USE_GUI
+    #include <ptu_tracking/PID_GUI.h>
+    #include <thread>
+    #include <ament_index_cpp/get_package_share_directory.hpp>
+    void CptuTrack::renderGUI()
+    {
+        std::string iniFilePath = ament_index_cpp::get_package_share_directory("ptu_tracking")+"/resources/imgui.ini";
+        AMENT_IMGUI::setup(iniFilePath.c_str(), "PID GUI");
+        rclcpp::Rate r(30);
+        while(rclcpp::ok())
+        {
+            AMENT_IMGUI::StartFrame();
+            RenderPIDGUI(*pid_controller_pan, "Pan");
+            RenderPIDGUI(*pid_controller_tilt, "Tilt");
+            AMENT_IMGUI::Render();
+        }
+        AMENT_IMGUI::close();
+    }
+#endif
 
 //-----------------------------------------------------------------------------------
 //                                   MAIN
@@ -285,6 +304,10 @@ int main(int argc, char** argv)
     // Main Loop
     //----------
     RCLCPP_INFO(node->get_logger(), "CptuTrack ready for operation...Looping");
+
+#if USE_GUI
+    std::jthread renderThread(std::bind(&CptuTrack::renderGUI, node));
+#endif
 
     rclcpp::spin(node);
     //rclcpp::Rate loop_rate(30.0);

@@ -55,6 +55,10 @@ public:
     // Aruco Detections (see image_marker_msgs)
     rclcpp::Subscription<image_marker_msgs::msg::MarkerDetection>::SharedPtr aruco_sub;
 
+#if USE_GUI
+    void renderGUI();
+#endif
+
 protected:
     bool initialized;
     double current_ptu_pan, current_ptu_tilt;
@@ -66,6 +70,8 @@ protected:
     void do_image_based_tracking(float tag_x, float tag_y);
     void ptu_send_pan_tilt(float pan, float tilt);
     void detected_tag_cb(image_marker_msgs::msg::MarkerDetection::SharedPtr msg);
+
+
 };
 
 #endif
