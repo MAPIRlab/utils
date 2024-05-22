@@ -24,16 +24,21 @@ public:
 private:
     float markerLength; //length of the side of the marker (meters)
 
+    CameraInfo::ConstSharedPtr m_cameraInfo;
+    
+    //message_filters::Subscriber<Image> imageSub;
+    //message_filters::Subscriber<CameraInfo> infoSub;
+    //using SyncPolicy = message_filters::sync_policies::ApproximateTime<Image, CameraInfo>;
+    //using Synchronizer = message_filters::Synchronizer<SyncPolicy>;
+    //std::shared_ptr<Synchronizer> sync_;
 
-    message_filters::Subscriber<Image> imageSub;
-    message_filters::Subscriber<CameraInfo> infoSub;
-    using SyncPolicy = message_filters::sync_policies::ApproximateTime<Image, CameraInfo>;
-    using Synchronizer = message_filters::Synchronizer<SyncPolicy>;
-    std::shared_ptr<Synchronizer> sync_;
+    rclcpp::Subscription<Image>::SharedPtr imageSub;
+    rclcpp::Subscription<CameraInfo>::SharedPtr cameraInfoSub;
 
     rclcpp::Publisher<image_marker_msgs::msg::MarkerDetection>::SharedPtr detectionsPub;
     std::shared_ptr<tf2_ros::TransformBroadcaster> transformBroadcaster;
 
-    void imageCallback(const Image::ConstSharedPtr image, const CameraInfo::ConstSharedPtr cameraInfo);
+    void cameraInfoCallback(const CameraInfo::ConstSharedPtr cameraInfo);
+    void imageCallback(const Image::ConstSharedPtr image);
     void detectArucoAndPublish(const cv::Mat& image, const cv::Mat& cameraMatrix, const std::vector<double>& distCoeffs, const std_msgs::msg::Header& image_header);
 };

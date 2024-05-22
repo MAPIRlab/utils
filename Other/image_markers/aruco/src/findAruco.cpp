@@ -19,26 +19,41 @@ ArucoNode::ArucoNode(std::string name) : rclcpp::Node(name)
     std::string cameraInfoTopic = declare_parameter<std::string>("cameraInfoTopic", "camera/camera_info");
     markerLength = declare_parameter<float>("markerLength", 0.1);
 
-    imageSub.subscribe(this, imageTopic, rmw_qos_profile_default);
-    infoSub.subscribe(this, cameraInfoTopic, rmw_qos_profile_default);
+    //imageSub.subscribe(this, imageTopic, rmw_qos_profile_default);
+    //infoSub.subscribe(this, cameraInfoTopic, rmw_qos_profile_default);
+//
+    //SyncPolicy policy(10);
+    //policy.setMaxIntervalDuration(rclcpp::Duration(100,0));
+    //sync_ = std::make_shared<Synchronizer>(SyncPolicy(policy), imageSub, infoSub);
+    //sync_->registerCallback(std::bind(&ArucoNode::imageCallback, this, std::placeholders::_1, std::placeholders::_2));
 
-    sync_ = std::make_shared<Synchronizer>(SyncPolicy(1), imageSub, infoSub);
-    sync_->registerCallback(std::bind(&ArucoNode::imageCallback, this, std::placeholders::_1, std::placeholders::_2));
-
+    imageSub = create_subscription<Image>(imageTopic, 5, std::bind(&ArucoNode::imageCallback, this, std::placeholders::_1));
+    cameraInfoSub = create_subscription<CameraInfo>(cameraInfoTopic, 1, std::bind(&ArucoNode::cameraInfoCallback, this, std::placeholders::_1));
     transformBroadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(this);
     detectionsPub = create_publisher<image_marker_msgs::msg::MarkerDetection>("aruco/detections", 20);
 }
 
-void ArucoNode::imageCallback(const Image::ConstSharedPtr image, const CameraInfo::ConstSharedPtr cameraInfo)
+void ArucoNode::cameraInfoCallback(const CameraInfo::ConstSharedPtr cameraInfo)
+{
+    m_cameraInfo = cameraInfo;
+}
+
+
+void ArucoNode::imageCallback(const Image::ConstSharedPtr image)
 {
     RCLCPP_INFO(get_logger(), "Got a new image");
+    if(!m_cameraInfo)
+    {
+        RCLCPP_WARN(get_logger(), "No camera info yet");
+    }
     cv_bridge::CvImageConstPtr cvBridgeImage = cv_bridge::toCvShare(image);
 
     // I guess you just have to know that "k" is the camera matrix and "d" is the dist coefficients
     // great naming, guys
-    cv::Mat cameraMatrix(cameraInfo->k, CV_64F);
+    cv::Mat cameraMatrix(m_cameraInfo->k, CV_64F);
     cameraMatrix = cameraMatrix.reshape(1, 3);
-    detectArucoAndPublish(cvBridgeImage->image, cameraMatrix, cameraInfo->d, cameraInfo->header);
+    detectArucoAndPublish(cvBridgeImage->image, cameraMatrix, m_cameraInfo->d, m_cameraInfo->header);
+    RCLCPP_INFO(get_logger(), "Ending callback");
 }
 
 void ArucoNode::detectArucoAndPublish(const cv::Mat& image, const cv::Mat& cameraMatrix, const std::vector<double>& distCoeffs, const std_msgs::msg::Header& image_header)
