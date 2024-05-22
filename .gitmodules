@@ -20,5 +20,8 @@
 	path = Coppelia/sim_ros2_interface
 	url = git@github.com:MAPIRlab/Coppelia-simExtROS2-FORK.git
 [submodule "Other/gps_viewer/third_party/QGeoView"]
-	path = Other/gps_viewer/third_party/QGeoView
+	path = Visualization/gps_viewer/third_party/QGeoView
 	url = git@github.com:AmonRaNet/QGeoView.git
+[submodule "Visualization/ament_imgui"]
+	path = Visualization/ament_imgui
+	url = https://github.com/PepeOjeda/ament_imgui
