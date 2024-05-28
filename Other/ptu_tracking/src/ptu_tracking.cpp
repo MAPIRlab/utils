@@ -280,20 +280,20 @@ void CptuTrack::do_tf_based_tracking()
     void CptuTrack::renderGUI()
     {
         std::string iniFilePath = ament_index_cpp::get_package_share_directory("ptu_tracking")+"/resources/imgui.ini";
-        AMENT_IMGUI::setup(iniFilePath.c_str(), "PID GUI");
+        AmentImgui::Setup(iniFilePath.c_str(), "PID GUI");
         rclcpp::Rate r(30);
         while(rclcpp::ok())
         {
-            AMENT_IMGUI::StartFrame();
+            AmentImgui::StartFrame();
             RenderPIDGUI(*pid_controller_pan, "Pan");
             RenderPIDGUI(*pid_controller_tilt, "Tilt");
             ImGui::Begin("Goal pixels");
             ImGui::InputInt("goal_marker_x", &goal_marker_x);
             ImGui::InputInt("goal_marker_y", &goal_marker_y);
             ImGui::End();
-            AMENT_IMGUI::Render();
+            AmentImgui::Render();
         }
-        AMENT_IMGUI::close();
+        AmentImgui::Close();
     }
 #endif
 
