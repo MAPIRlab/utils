@@ -18,7 +18,7 @@ find_package(interbotix_xs_msgs)
 find_package(Boost REQUIRED COMPONENTS system)
 
 if(USE_GUI)
-find_package(ament_imgui)
+find_package(ament_imgui REQUIRED)
 set(CONDITIONAL_IMGUI "ament_imgui") 
 add_compile_definitions("USE_GUI=1")
 endif()

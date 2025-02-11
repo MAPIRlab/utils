@@ -18,6 +18,7 @@
   <depend>std_msgs</depend>
   <depend>Boost</depend>
   <depend>interbotix_xs_msgs</depend>
+  <depend>ament_imgui</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

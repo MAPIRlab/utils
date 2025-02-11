@@ -7,10 +7,11 @@
 .idea
 
 # VisualCode config
-*.vscode/*
+**.vscode
+**.cache
 
 # colcon/CMake output
-build
-install
-log
+**build
+**install
+**log
 COLCON_IGNORE
