@@ -26,5 +26,5 @@
 	path = Visualization/ament_imgui
 	url = https://github.com/PepeOjeda/ament_imgui
 [submodule "Communications/socket_transfer"]
-	path = Communications/socket_transfer
+	path = Communications/sockets/socket_transfer
 	url = git@github.com:PepeOjeda/socket_transfer.git
