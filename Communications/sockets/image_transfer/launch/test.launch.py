@@ -18,31 +18,32 @@ def launch_arguments():
 
 
 def launch_setup(context, *args, **kwargs):
-    client = Node(
-        package="image_transfer",
-        name="client",
-        executable="client_raw_udp",
-        prefix="xterm -hold -e",
-        parameters=[
-            {"topic": "/rgbd/color/raw"},
-            {"serverIP": "127.0.0.1"},
-            {"serverPort": 15768},
-        ],
-    )
-
     server = Node(
         package="image_transfer",
-        name="server",
-        executable="server_raw_udp",
+        executable="server_compressed",
         prefix="xterm -hold -e",
         parameters=[
+            {"protocol": "TCP"},
             {"port": 15768},
             {"topic": "/received_image"},
         ],
     )
+
+    client = Node(
+        package="image_transfer",
+        executable="client_compressed",
+        prefix="xterm -hold -e",
+        parameters=[
+            {"protocol": "TCP"},
+            {"serverIP": "127.0.0.1"},
+            {"serverPort": 15768},
+            {"topic": "/rgbd/color/compressed"},
+        ],
+    )
+
     return [
         server,
-        client,
+        client
     ]
 
 
