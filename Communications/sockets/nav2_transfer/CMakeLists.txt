@@ -10,10 +10,13 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_executable(navToPoseClient src/navToPoseClient.cpp)
 ament_auto_add_executable(navToPoseServer src/navToPoseServer.cpp)
+ament_auto_add_executable(rvizTest src/rvizTest.cpp)
 
+ament_auto_add_executable(mapClient src/mapClient.cpp)
+ament_auto_add_executable(mapServer src/mapServer.cpp)
 
 install(
-    TARGETS navToPoseClient navToPoseServer
+    TARGETS navToPoseClient navToPoseServer rvizTest mapClient mapServer
     DESTINATION lib/${PROJECT_NAME}
 )
 
