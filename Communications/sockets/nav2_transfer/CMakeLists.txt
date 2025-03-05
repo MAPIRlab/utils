@@ -8,12 +8,12 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_executable(client src/client.cpp)
-ament_auto_add_executable(server src/server.cpp)
+ament_auto_add_executable(navToPoseClient src/navToPoseClient.cpp)
+ament_auto_add_executable(navToPoseServer src/navToPoseServer.cpp)
 
 
 install(
-    TARGETS client server
+    TARGETS navToPoseClient navToPoseServer
     DESTINATION lib/${PROJECT_NAME}
 )
 
