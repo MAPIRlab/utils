@@ -8,12 +8,14 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_executable(client src/client.cpp)
-ament_auto_add_executable(server src/server.cpp)
+ament_auto_add_executable(tf_client src/tf/client.cpp)
+ament_auto_add_executable(tf_server src/tf/server.cpp)
 
+ament_auto_add_executable(poseStamped_client src/poseStamped/client.cpp)
+ament_auto_add_executable(poseStamped_server src/poseStamped/server.cpp)
 
 install(
-    TARGETS client server
+    TARGETS tf_client tf_server poseStamped_client poseStamped_server
     DESTINATION lib/${PROJECT_NAME}
 )
 

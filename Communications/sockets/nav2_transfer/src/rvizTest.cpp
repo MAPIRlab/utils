@@ -17,7 +17,9 @@ int main(int argc, char** argv)
 
         client->async_send_goal(goal);
     };
-    auto sub = node->create_subscription<geometry_msgs::msg::PoseStamped>("/goal_pose", 1, callback);
+    std::string topic = node->declare_parameter<std::string>("topic", "/goal_pose");
+    auto sub = node->create_subscription<geometry_msgs::msg::PoseStamped>("topic", 1, callback);
+    RCLCPP_INFO(node->get_logger(), "Listening to topic '%s", sub->get_topic_name());
     
     rclcpp::spin(node);
 }
