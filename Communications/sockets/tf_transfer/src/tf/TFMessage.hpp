@@ -19,26 +19,13 @@ struct SocketTransfer::Serializer<TFMessage>
         for (const TransformStamped& tfStmp : msg.transforms)
         {
             // Header
-            {
-                writer.Write(&tfStmp.header.stamp.sec);
-                writer.Write(&tfStmp.header.stamp.nanosec);
-
-                uint16_t frameIDSize = tfStmp.header.frame_id.length();
-                writer.Write(&frameIDSize);
-                writer.Write(tfStmp.header.frame_id.data(), frameIDSize);
-            }
+            SerializationUtils::SerializeHeader(writer, tfStmp.header);
 
             // child frame id
-            {
-                uint16_t childframeIDSize = tfStmp.child_frame_id.length();
-                writer.Write(&childframeIDSize);
-                writer.Write(tfStmp.child_frame_id.data(), childframeIDSize);
-            }
+            SerializationUtils::SerializeString(writer, tfStmp.child_frame_id);
 
             // Transform
-            {
-                writer.Write(&tfStmp.transform);
-            }
+            writer.Write(&tfStmp.transform);
         }
 
         return writer.getUsedBufferView();
@@ -55,28 +42,13 @@ struct SocketTransfer::Serializer<TFMessage>
         for (TransformStamped& tfStmp : msg.transforms)
         {
             // Header
-            {
-                reader.Read(&tfStmp.header.stamp.sec);
-                reader.Read(&tfStmp.header.stamp.nanosec);
-
-                uint16_t frameIDSize = tfStmp.header.frame_id.length();
-                reader.Read(&frameIDSize);
-                tfStmp.header.frame_id.resize(frameIDSize);
-                reader.Read(tfStmp.header.frame_id.data(), frameIDSize);
-            }
+            SerializationUtils::DeserializeHeader(reader, tfStmp.header);
 
             // child frame id
-            {
-                uint16_t childframeIDSize = tfStmp.child_frame_id.length();
-                reader.Read(&childframeIDSize);
-                tfStmp.child_frame_id.resize(childframeIDSize);
-                reader.Read(tfStmp.child_frame_id.data(), childframeIDSize);
-            }
+            SerializationUtils::DeserializeString(reader, tfStmp.child_frame_id);
 
             // Transform
-            {
-                reader.Read(&tfStmp.transform);
-            }
+            reader.Read(&tfStmp.transform);
         }
     }
 };

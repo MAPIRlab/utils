@@ -15,31 +15,19 @@ namespace SocketTransfer
             BufferWriter writer(bufferView.buffer, bufferView.buffer_size);
 
             // Header
-            writer.Write(&msg.header.stamp.sec);
-            writer.Write(&msg.header.stamp.nanosec);
-
-            uint16_t frameIDSize = msg.header.frame_id.length();
-            writer.Write(&frameIDSize);
-            writer.Write(msg.header.frame_id.data(), frameIDSize);
+            SerializationUtils::SerializeHeader(writer, msg.header);
 
             // metadata
             writer.Write(&msg.height);
             writer.Write(&msg.width);
 
-            size_t encoding_length = msg.encoding.length();
-            writer.Write(&encoding_length);
-            writer.Write(msg.encoding.data(), encoding_length);
+            SerializationUtils::SerializeString(writer, msg.encoding);
 
             writer.Write(&msg.is_bigendian);
             writer.Write(&msg.step);
 
             // data
-            size_t dataSize = msg.data.size();
-            writer.Write(&dataSize);
-
-            writer.Write(msg.data.data(), dataSize);
-
-            bufferView.buffer_size = writer.currentOffset();
+            SerializationUtils::SerializeVector(writer, msg.data);
 
             return writer.getUsedBufferView();
         }
@@ -49,32 +37,19 @@ namespace SocketTransfer
             BufferReader reader(bufferView.buffer, bufferView.buffer_size);
 
             //  Header
-            reader.Read(&msg.header.stamp.sec);
-            reader.Read(&msg.header.stamp.nanosec);
-
-            uint16_t frameIDSize;
-            reader.Read(&frameIDSize);
-            msg.header.frame_id.resize(frameIDSize);
-            reader.Read(msg.header.frame_id.data(), frameIDSize);
+            SerializationUtils::DeserializeHeader(reader, msg.header);
 
             // metadata
             reader.Read(&msg.height);
             reader.Read(&msg.width);
 
-            size_t encoding_length;
-            reader.Read(&encoding_length);
-            msg.encoding.resize(encoding_length);
-            reader.Read(msg.encoding.data(), encoding_length);
+            SerializationUtils::DeserializeString(reader, msg.encoding);
 
             reader.Read(&msg.is_bigendian);
             reader.Read(&msg.step);
 
             // data
-            size_t dataSize;
-            reader.Read(&dataSize);
-            msg.data.resize(dataSize);
-
-            reader.Read(msg.data.data(), dataSize);
+            SerializationUtils::DeserializeVector(reader, msg.data);
         }
     };
 } // namespace SocketTransfer

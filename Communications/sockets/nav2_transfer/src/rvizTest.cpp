@@ -7,7 +7,8 @@ int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<rclcpp::Node>("test");
-    auto client = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(node, "navigate_to_pose");
+    std::string actionServer = node->declare_parameter<std::string>("actionServer", "/goal_pose");
+    auto client = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(node, actionServer);
 
     auto callback = [&](const geometry_msgs::msg::PoseStamped::SharedPtr pose)
     {
@@ -18,8 +19,8 @@ int main(int argc, char** argv)
         client->async_send_goal(goal);
     };
     std::string topic = node->declare_parameter<std::string>("topic", "/goal_pose");
-    auto sub = node->create_subscription<geometry_msgs::msg::PoseStamped>("topic", 1, callback);
-    RCLCPP_INFO(node->get_logger(), "Listening to topic '%s", sub->get_topic_name());
+    auto sub = node->create_subscription<geometry_msgs::msg::PoseStamped>(topic, 1, callback);
+    RCLCPP_INFO(node->get_logger(), "Listening to topic '%s'", sub->get_topic_name());
     
     rclcpp::spin(node);
 }

@@ -12,24 +12,12 @@ struct SocketTransfer::Serializer<NavToPose::Goal>
         BufferWriter writer(bufferView);
 
         // pose header
-        {
-            size_t frame_id_length = msg.pose.header.frame_id.length();
-            writer.Write(&frame_id_length);
-            writer.Write(msg.pose.header.frame_id.data(), frame_id_length);
-            writer.Write(&msg.pose.header.stamp);
-        }
+        SerializationUtils::SerializeHeader(writer, msg.pose.header);
 
         // pose
-        {
-            writer.Write(&msg.pose.pose);
-        }
+        writer.Write(&msg.pose.pose);
 
-        {
-            // behavior tree
-            size_t behaviorTreeLength = msg.behavior_tree.length();
-            writer.Write(&behaviorTreeLength);
-            writer.Write(msg.behavior_tree.data(), behaviorTreeLength);
-        }
+        SerializationUtils::SerializeString(writer, msg.behavior_tree);
 
         return writer.getUsedBufferView();
     }
@@ -39,26 +27,12 @@ struct SocketTransfer::Serializer<NavToPose::Goal>
         BufferReader reader(bufferView);
 
         // pose header
-        {
-            size_t frame_id_length = msg.pose.header.frame_id.length();
-            reader.Read(&frame_id_length);
-            msg.pose.header.frame_id.resize(frame_id_length);
-            reader.Read(msg.pose.header.frame_id.data(), frame_id_length);
-            reader.Read(&msg.pose.header.stamp);
-        }
-
+        SerializationUtils::DeserializeHeader(reader, msg.pose.header);
         // pose
-        {
-            reader.Read(&msg.pose.pose);
-        }
+        reader.Read(&msg.pose.pose);
 
         // behavior tree
-        {
-            size_t behaviorTreeLength = msg.behavior_tree.length();
-            reader.Read(&behaviorTreeLength);
-            msg.behavior_tree.resize(behaviorTreeLength);
-            reader.Read(msg.behavior_tree.data(), behaviorTreeLength);
-        }
+        SerializationUtils::DeserializeString(reader, msg.behavior_tree);
     }
 };
 
