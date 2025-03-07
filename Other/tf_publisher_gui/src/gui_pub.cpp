@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 inline GUIPub::GUIPub()
     : Node("guiPub")
 {
-    freq = declare_parameter<float>("freq", 30);
+    freq = declare_parameter<float>("freq", 10);
     x = declare_parameter<float>("x", 0);
     y = declare_parameter<float>("y", 0);
     z = declare_parameter<float>("z", 0);
