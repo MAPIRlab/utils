@@ -21,6 +21,7 @@ private:
     float x, y, z;
     float roll, pitch, yaw;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
+    bool render;
 };
 
 int main(int argc, char** argv)
@@ -52,17 +53,21 @@ inline GUIPub::GUIPub()
     child_frame = declare_parameter<std::string>("child_frame", "");
     tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-    AmentImgui::Setup(
-        nullptr,
-        "TransformPublisher",
-        350,
-        250,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiConfigFlags_NavEnableKeyboard);
+    render = declare_parameter<bool>("renderGUI", true);
+
+    if (render)
+        AmentImgui::Setup(
+            nullptr,
+            "TransformPublisher",
+            350,
+            250,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiConfigFlags_NavEnableKeyboard);
 }
 
 inline void GUIPub::Update()
 {
-    RenderGUI();
+    if (render)
+        RenderGUI();
 
     if (parent_frame == "" || child_frame == "")
         return;
@@ -91,16 +96,28 @@ inline void GUIPub::RenderGUI()
     ImGui::SetNextWindowPos(ImVec2(0, 0));
 
     ImGui::Begin("Parameters");
-    ImGui::DragFloat("x",       &x,     0.01f, -FLT_MAX, FLT_MAX, "%.2f");
-    ImGui::DragFloat("y",       &y,     0.01f, -FLT_MAX, FLT_MAX, "%.2f");
-    ImGui::DragFloat("z",       &z,     0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("x", &x, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("y", &y, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("z", &z, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 
-    ImGui::DragFloat("roll",    &roll,  0.01f, -FLT_MAX, FLT_MAX, "%.2f");
-    ImGui::DragFloat("pitch",   &pitch, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
-    ImGui::DragFloat("yaw",     &yaw,   0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("roll", &roll, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("pitch", &pitch, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("yaw", &yaw, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 
-    ImGui::InputText("parent_frame",    &parent_frame);
-    ImGui::InputText("child_frame",     &child_frame);
+    ImGui::InputText("parent_frame", &parent_frame);
+    ImGui::InputText("child_frame", &child_frame);
+
+    if (ImGui::Button("Print Current config"))
+    {
+        fprintf(stderr, "{'x' :             %.2f},\n", x);
+        fprintf(stderr, "{'y' :             %.2f},\n", y);
+        fprintf(stderr, "{'z' :             %.2f},\n", z);
+        fprintf(stderr, "{'roll' :          %.2f},\n", roll);
+        fprintf(stderr, "{'pitch' :         %.2f},\n", pitch);
+        fprintf(stderr, "{'yaw' :           %.2f},\n", yaw);
+        fprintf(stderr, "{'parent_frame' :  '%s'},\n", parent_frame.c_str());
+        fprintf(stderr, "{'child_frame' :   '%s'},\n", child_frame.c_str());
+    }
 
     ImGui::End();
 
