@@ -91,16 +91,16 @@ inline void GUIPub::RenderGUI()
     ImGui::SetNextWindowPos(ImVec2(0, 0));
 
     ImGui::Begin("Parameters");
-    ImGui::DragFloat("x", &x, 0.1f, 0.0f, FLT_MAX, "%.2f");
-    ImGui::DragFloat("y", &y, 0.1f, 0.0f, FLT_MAX, "%.2f");
-    ImGui::DragFloat("z", &z, 0.1f, 0.0f, FLT_MAX, "%.2f");
+    ImGui::DragFloat("x",       &x,     0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("y",       &y,     0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("z",       &z,     0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 
-    ImGui::DragFloat("roll", &roll, 0.1f, 0.0f, FLT_MAX, "%.2f");
-    ImGui::DragFloat("pitch", &pitch, 0.1f, 0.0f, FLT_MAX, "%.2f");
-    ImGui::DragFloat("yaw", &yaw, 0.1f, 0.0f, FLT_MAX, "%.2f");
+    ImGui::DragFloat("roll",    &roll,  0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("pitch",   &pitch, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+    ImGui::DragFloat("yaw",     &yaw,   0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 
-    ImGui::InputText("parent_frame", &parent_frame);
-    ImGui::InputText("child_frame", &child_frame);
+    ImGui::InputText("parent_frame",    &parent_frame);
+    ImGui::InputText("child_frame",     &child_frame);
 
     ImGui::End();
 
