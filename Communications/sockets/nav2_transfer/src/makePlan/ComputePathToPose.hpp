@@ -46,7 +46,14 @@ namespace SocketTransfer
 
             writer.Write(&msg.planning_time);
             SerializationUtils::SerializeHeader(writer, msg.path.header);
-            SerializationUtils::SerializeVector(writer, msg.path.poses);
+            
+            size_t length = msg.path.poses.size();
+            writer.Write(&length);
+            for(auto pose : msg.path.poses)
+            {
+                SerializationUtils::SerializeHeader(writer, pose.header);
+                writer.Write(&pose.pose);
+            }
 
             return writer.getUsedBufferView();
         }
@@ -57,7 +64,15 @@ namespace SocketTransfer
 
             reader.Read(&msg.planning_time);
             SerializationUtils::DeserializeHeader(reader, msg.path.header);
-            SerializationUtils::DeserializeVector(reader, msg.path.poses);
+
+            size_t length;
+            reader.Read(&length);
+            msg.path.poses.resize(length);
+            for(auto pose : msg.path.poses)
+            {
+                SerializationUtils::DeserializeHeader(reader, pose.header);
+                reader.Read(&pose.pose);
+            }
         }
     };
 } // namespace SocketTransfer
