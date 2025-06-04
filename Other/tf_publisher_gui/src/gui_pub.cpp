@@ -83,7 +83,8 @@ inline void GUIPub::Run()
 
 inline void GUIPub::RenderGUI()
 {
-    AmentImgui::Setup(
+    AmentImgui imgui;
+    imgui.Setup(
         nullptr,
         "TransformPublisher",
         350,
@@ -92,7 +93,7 @@ inline void GUIPub::RenderGUI()
     rclcpp::Rate rate(30);
     while (rclcpp::ok())
     {
-        AmentImgui::StartFrame();
+        imgui.StartFrame();
 
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
@@ -124,7 +125,7 @@ inline void GUIPub::RenderGUI()
 
         ImGui::End();
 
-        AmentImgui::Render();
+        imgui.Render();
         rate.sleep();
     }
 }
