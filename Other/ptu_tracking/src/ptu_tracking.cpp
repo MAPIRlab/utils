@@ -279,7 +279,7 @@ void CptuTrack::do_tf_based_tracking()
     #include <ament_index_cpp/get_package_share_directory.hpp>
     void CptuTrack::renderGUI()
     {
-        AmentImgui imgui;
+        ImguiGL imgui;
         std::string iniFilePath = ament_index_cpp::get_package_share_directory("ptu_tracking")+"/resources/imgui.ini";
         imgui.Setup(iniFilePath.c_str(), "PID GUI");
         rclcpp::Rate r(30);

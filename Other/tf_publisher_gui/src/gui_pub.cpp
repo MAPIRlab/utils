@@ -1,4 +1,4 @@
-#include <ament_imgui/ament_imgui.h>
+#include <imgui_gl/imgui_gl.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
@@ -83,7 +83,7 @@ inline void GUIPub::Run()
 
 inline void GUIPub::RenderGUI()
 {
-    AmentImgui imgui;
+    ImguiGL imgui;
     imgui.Setup(
         nullptr,
         "TransformPublisher",
