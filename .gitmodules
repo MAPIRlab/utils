@@ -18,7 +18,7 @@
 	url = git@github.com:MAPIRlab/people_detection.git
 [submodule "HRI/sancho_ws"]
 	path = HRI/sancho_ws
-	url = git@github.com:antbaena/sancho_ws.git
+	url = https://github.com/antbaena/sancho_ws.git
 [submodule "Coppelia/sim_ros2_interface"]
 	path = Coppelia/sim_ros2_interface
 	url = git@github.com:MAPIRlab/Coppelia-simExtROS2-FORK.git
