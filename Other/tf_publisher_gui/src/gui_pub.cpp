@@ -62,7 +62,7 @@ inline void GUIPub::Run()
     while (rclcpp::ok())
     {
         if (parent_frame == "" || child_frame == "")
-            return;
+            continue;
 
         geometry_msgs::msg::TransformStamped transform;
         transform.header.frame_id = parent_frame;
